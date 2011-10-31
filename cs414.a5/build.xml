@@ -71,4 +71,7 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="startRMI" depends="init">
+        <exec executable="rmiregistry" dir="${build.classes.dir}"></exec>
+    </target> 
 </project>
