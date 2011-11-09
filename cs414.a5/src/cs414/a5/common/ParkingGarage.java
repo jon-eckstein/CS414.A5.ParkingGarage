@@ -13,22 +13,26 @@ import java.util.Date;
  */
 public interface ParkingGarage extends java.rmi.Remote  {
 
-    String createEntryEvent(Date entryDate) throws Exception, java.rmi.RemoteException;
+    EntryEvent createEntryEvent(Date entryDate,String gateId) throws ParkingGarageException, java.rmi.RemoteException;
 
-    String createEntryEvent() throws Exception, java.rmi.RemoteException;
-
+    EntryEvent createEntryEvent(String gateId) throws ParkingGarageException, java.rmi.RemoteException;
+    
+    ExitEvent createExitEvent(String ticketId, Date exitDateTime) throws ParkingGarageException, java.rmi.RemoteException;
+    
     int getAvailableSpotCount() throws java.rmi.RemoteException;
 
     int getTotalSpots() throws java.rmi.RemoteException;
 
-    void processCardPayment(BigDecimal amount, String cardNumber, Date expireDate, String ticketId) throws Exception, java.rmi.RemoteException;
+    void processCardPayment(BigDecimal amount, String cardNumber, Date expireDate, String ticketId) throws ParkingGarageException, java.rmi.RemoteException;
 
-    void processCashPayment(BigDecimal amount, String ticketId) throws Exception, java.rmi.RemoteException;
+    void processCashPayment(BigDecimal amount, String ticketId) throws ParkingGarageException, java.rmi.RemoteException;
 
-    BigDecimal processExit(String ticketId, Date exitDateTime) throws Exception, java.rmi.RemoteException;
+    void processIou(BigDecimal amount, String customerName, String customerPhone, String customerAddress, String ticketId) throws ParkingGarageException, java.rmi.RemoteException;
 
-    void processIou(BigDecimal amount, String customerName, String customerPhone, String customerAddress, String ticketId) throws Exception, java.rmi.RemoteException;
-
-    void setRate(Date startDate, Date endDate, BigDecimal rate, boolean isFlatRate) throws Exception, java.rmi.RemoteException;
+    void setRate(Date startDate, Date endDate, BigDecimal rate, boolean isFlatRate) throws ParkingGarageException, java.rmi.RemoteException;
+    
+    void openGate(String gateId) throws ParkingGarageException, java.rmi.RemoteException;
+    
+    void closeGate(String gateId) throws ParkingGarageException, java.rmi.RemoteException;
     
 }

@@ -4,6 +4,9 @@
  */
 package cs414.a5.server;
 
+import cs414.a5.common.ExitEvent;
+import cs414.a5.common.EntryEvent;
+import cs414.a5.common.ParkingGarageException;
 import cs414.a5.common.Utilities;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,75 +36,77 @@ public class EntryExitManager {
        return openEntries.size();
     }
 
-    public EntryEvent createEntryEvent(Date entryDate) {
-        EntryEvent newEntry = new EntryEvent(Integer.toString(ticketIdCounter++), entryDate);
+    public EntryEvent createEntryEvent(Date entryDate, String gateId) throws ParkingGarageException {
+        EntryEvent newEntry = new EntryEventImpl(getNextTicketId(), entryDate, gateId);
         openEntries.put(newEntry.getTicketId(), newEntry);
         return newEntry;
     }
     
-    public EntryEvent createEntryEvent(){
-        return createEntryEvent(new Date());
+    public EntryEvent createEntryEvent(String gateId) throws ParkingGarageException{
+        return createEntryEvent(new Date(), gateId);
     }
     
     
-    public ExitEvent createExitEvent(String ticketId, Date exitDateTime) throws Exception{
+    public ExitEvent createExitEvent(String ticketId, Date exitDateTime) throws ParkingGarageException{
         ExitEvent exit;
         BigDecimal rate;
                 
         if(!Utilities.isNullOrEmpty(ticketId)){
             //this is a regular entry/exit event
             EntryEvent entry = openEntries.get(ticketId);
-            if(entry == null) throw new Exception("Could not find entry with given ticket ID.");
+            if(entry == null) throw new ParkingGarageException("Could not find entry with given ticket ID.");
             rate = getRate(entry.getEntryDate(), exitDateTime);
-            exit = new ExitEvent(entry, exitDateTime, rate);
+            exit = new ExitEventImpl(entry, exitDateTime, rate);
             //remove the openEntry record...
             openEntries.remove(ticketId);
         }else{
             //lost or damaged ticket, flat rate transaction...
             rate = getRate(exitDateTime);
-            exit = new ExitEvent(null, exitDateTime, rate);            
+            exit = new ExitEventImpl(null, exitDateTime, rate);            
         }
         
         exitEvents.add(exit);
         return exit;                
     }
     
-    public ExitEvent createExitEvent(String ticketId) throws Exception{
+    public ExitEvent createExitEvent(String ticketId) throws ParkingGarageException{
         return createExitEvent(ticketId, new Date());
     }
     
            
-    public EntryEvent getEntryEvent(String ticketId) throws Exception {
+    public EntryEvent getEntryEvent(String ticketId) throws ParkingGarageException {
         if(openEntries.containsKey(ticketId))
             return openEntries.get(ticketId);
         else
-            throw new Exception("Invalid ticket number.");                     
+            throw new ParkingGarageException("Invalid ticket number.");                     
     }
     
-    public ExitEvent getExitEvent(String ticketId) throws Exception{
+    public ExitEvent getExitEvent(String ticketId) throws ParkingGarageException{
         for(ExitEvent event : exitEvents)
             if(event.getTicketId().equals(ticketId))
                 return event;
         
-        throw new Exception("Could not find exit event.");
+        throw new ParkingGarageException("Could not find exit event.");
     }
     
-    public EntryEvent[] getCurrentEntryEvents(){
-        return (EntryEvent[])openEntries.values().toArray(new EntryEvent[openEntries.size()]);        
+    public EntryEventImpl[] getCurrentEntryEvents(){
+        return (EntryEventImpl[])openEntries.values().toArray(new EntryEventImpl[openEntries.size()]);        
     }
     
-    public ExitEvent[] getExitEvents(){
-        return exitEvents.toArray(new ExitEvent[exitEvents.size()]);       
+    public ExitEventImpl[] getExitEvents(){
+        return exitEvents.toArray(new ExitEventImpl[exitEvents.size()]);       
     }
     
-    private BigDecimal getRate(Date entryDate, Date exitDate) throws Exception{
+    private BigDecimal getRate(Date entryDate, Date exitDate) throws ParkingGarageException{
         return rateManager.getRegularRate(entryDate, exitDate);
     }
     
-    private BigDecimal getRate(Date exitDateTime) throws Exception{
+    private BigDecimal getRate(Date exitDateTime) throws ParkingGarageException{
         return rateManager.getFlatRate(exitDateTime);
     }
     
-    
+    private synchronized String getNextTicketId(){
+        return Integer.toString(ticketIdCounter++);
+    }
     
 }

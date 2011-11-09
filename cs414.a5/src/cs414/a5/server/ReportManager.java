@@ -25,8 +25,8 @@ public class ReportManager {
         
         UsageReportViewModel viewModel = new UsageReportViewModel(startDate, endDate, delimiter);
         
-        EntryEvent[] currentEntryEvents = entryExitManager.getCurrentEntryEvents();
-        ExitEvent[] exitEvents = entryExitManager.getExitEvents();
+        EntryEventImpl[] currentEntryEvents = entryExitManager.getCurrentEntryEvents();
+        ExitEventImpl[] exitEvents = entryExitManager.getExitEvents();
         
         Calendar calCounter=Calendar.getInstance();
         Calendar calEnd = Calendar.getInstance();        
@@ -35,13 +35,13 @@ public class ReportManager {
         for(calCounter.setTime(startDate), calEnd.setTime(endDate); calCounter.before(calEnd); calCounter.add(delimiter, 1)){
             int delimeterCounter = 0;                
            
-            for(EntryEvent entry : currentEntryEvents){
+            for(EntryEventImpl entry : currentEntryEvents){
                 entryExitCal.setTime(entry.getEntryDate());
                 if(entryExitCal.after(calCounter))
                     delimeterCounter++;
             }
             
-            for(ExitEvent exit : exitEvents){
+            for(ExitEventImpl exit : exitEvents){
                 entryExitCal.setTime(exit.getEntryDate());
                 Date calCounterDate = calCounter.getTime();
                 boolean isWithin = isWithinRange(exit, calCounterDate); 
@@ -62,7 +62,7 @@ public class ReportManager {
         return viewModel;        
     }
     
-    private boolean isWithinRange(ExitEvent exit, Date calDate) {          
+    private boolean isWithinRange(ExitEventImpl exit, Date calDate) {          
         //return (calDate.before(exit.getExitDate()) && calDate.after(exit.getEntryDate()));
         return (calDate.compareTo(exit.getExitDate()) <=0 && calDate.compareTo(exit.getEntryDate()) <=0);
     }

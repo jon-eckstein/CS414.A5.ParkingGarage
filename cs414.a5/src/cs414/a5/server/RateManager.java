@@ -4,6 +4,7 @@
  */
 package cs414.a5.server;
 
+import cs414.a5.common.ParkingGarageException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,7 +23,7 @@ public class RateManager {
     }
     
     
-    public BigDecimal getRegularRate(Date entryDateTime, Date exitDateTime) throws Exception {
+    public BigDecimal getRegularRate(Date entryDateTime, Date exitDateTime) throws ParkingGarageException {
         
         for(Rate rateRecord : rates){
             if(exitDateTime.before(rateRecord.getEndDateTime()) && entryDateTime.after(rateRecord.getStartDateTime())
@@ -30,10 +31,10 @@ public class RateManager {
                 return rateRecord.getRate();            
         }
         
-        throw new Exception("Could not find a rate within specified time period.");
+        throw new ParkingGarageException("Could not find a rate within specified time period.");
     }
 
-    public BigDecimal getFlatRate(Date exitDateTime) throws Exception {
+    public BigDecimal getFlatRate(Date exitDateTime) throws ParkingGarageException {
         
         for(Rate rateRecord : rates){
             if(exitDateTime.before(rateRecord.getEndDateTime()) && exitDateTime.after(rateRecord.getStartDateTime())
@@ -41,18 +42,18 @@ public class RateManager {
                 return rateRecord.getRate();            
         }
         
-        throw new Exception("Could not find a rate within specified time period.");
+        throw new ParkingGarageException("Could not find a rate within specified time period.");
         
     }
 
-    public void setRate(Date startDate, Date endDate, BigDecimal rate, boolean isFlatRate) throws Exception {
+    public void setRate(Date startDate, Date endDate, BigDecimal rate, boolean isFlatRate) throws ParkingGarageException {
         //find the cross-over
         for(Rate existingRate : rates){
             Date start = existingRate.getStartDateTime();
             Date end = existingRate.getEndDateTime();
             if(isWithinRange(existingRate, startDate, endDate) && 
                    existingRate.getIsFlatRate() == isFlatRate ){
-                throw new Exception("Rate in specified time period already exists.");
+                throw new ParkingGarageException("Rate in specified time period already exists.");
             }
             
         }

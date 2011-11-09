@@ -4,6 +4,10 @@
  */
 package cs414.a5.server;
 
+import cs414.a5.common.ExitEvent;
+import cs414.a5.common.EntryEvent;
+import cs414.a5.common.ParkingGarageException;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -14,7 +18,7 @@ import java.util.Date;
  *
  * @author jeckstein
  */
-public class ExitEvent {
+public class ExitEventImpl implements Serializable,ExitEvent {
     
     private EntryEvent entryEvent;
     private ArrayList<Payment> payments;
@@ -24,34 +28,42 @@ public class ExitEvent {
     private boolean isFlatRate = false;
     private final double  HOURS_IN_MILLI = 1000*60*60;
     
-    public ExitEvent(EntryEvent entryEvent, Date exitDateTime, BigDecimal rate){
+    public ExitEventImpl(EntryEvent entryEvent, Date exitDateTime, BigDecimal rate){
         this.entryEvent = entryEvent;
         this.exitDateTime = exitDateTime;
         this.rate = rate;
         if(entryEvent == null)
-        isFlatRate = true;
+            isFlatRate = true;
     }
     
     
-    public BigDecimal getTotal() {       
+    @Override
+    public BigDecimal getTotalInvoiceAmount() {       
         if(isFlatRate)
             return rate;
-        else{                
-            double hourDiff =  (exitDateTime.getTime()/HOURS_IN_MILLI) - (getEntryDate().getTime()/HOURS_IN_MILLI);            
-            if(hourDiff < 1)
-                hourDiff = 1;
-            
-            return BigDecimal.valueOf(hourDiff).multiply(rate).round(new MathContext(4,RoundingMode.UP));                                       
-        }
+        else                            
+            return BigDecimal.valueOf(getTotalHours()).multiply(rate).round(new MathContext(4,RoundingMode.UP));                                       
+        
     }
     
+    @Override
     public String getTicketId(){
         if(entryEvent != null)
             return entryEvent.getTicketId();
         else
             return null;
     }
+   
+   
+    @Override
+    public double getTotalHours(){
+        double hours = (exitDateTime.getTime()/HOURS_IN_MILLI) - (getEntryDate().getTime()/HOURS_IN_MILLI);
+        if(hours < 1)
+            hours = 1;
+        return hours;
+    }
     
+    @Override
     public Date getEntryDate(){        
         if(entryEvent != null)
             return entryEvent.getEntryDate();
@@ -59,33 +71,44 @@ public class ExitEvent {
             return null;        
     }
     
+    @Override
     public Date getExitDate(){
         return this.exitDateTime;
     }
     
-    public void addPayment(Payment payment) throws Exception{
+    @Override
+    public String getEntryGateId(){
+        if(entryEvent != null)
+            return entryEvent.getGateId();
+        else
+            return null;
+    }
+    
+    public void addPayment(Payment payment) throws ParkingGarageException{
         
-        if(totalPaid().add(payment.getAmountPaid()).compareTo(getTotal()) <= 0){
+        if(totalPaid().add(payment.getAmountPaid()).compareTo(getTotalInvoiceAmount()) <= 0){
             getPayments().add(payment);
         }else{
-            throw new Exception("Adding this payment will overpay the transaction. Payment not added.");
+            throw new ParkingGarageException("Adding this payment will overpay the transaction. Payment not added.");
         }               
     }
     
-    public void setIou(Iou owed) throws Exception{
-        if(owed.getAmountOwed().compareTo(getTotal())==0)
+    public void setIou(Iou owed) throws ParkingGarageException{
+        if(owed.getAmountOwed().compareTo(getTotalInvoiceAmount())==0)
             iou = owed;
         else
-            throw new Exception("Balance owed does not equal transaction balance.");
+            throw new ParkingGarageException("Balance owed does not equal transaction balance.");
     }
     
     /**
      * @return the balance
      */
+    @Override
     public Iou getIou() {
         return iou;
     }
     
+    @Override
     public BigDecimal totalPaid(){
         BigDecimal value = new BigDecimal(0);
         
@@ -99,6 +122,7 @@ public class ExitEvent {
     /**
      * @return the payments
      */
+    @Override
     public ArrayList<Payment> getPayments() {
         if(payments == null)
             payments = new ArrayList<Payment>();

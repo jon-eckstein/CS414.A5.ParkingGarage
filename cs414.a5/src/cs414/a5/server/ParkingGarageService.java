@@ -29,8 +29,7 @@ public class ParkingGarageService {
     }
     
     
-    public static void main(String args[])  {
-        
+    public static void main(String args[])  {     
         String url = new String("rmi://" + args[0] + ":" + args[1] + "/ParkingGarageService");
         new ParkingGarageService(url);
     }
