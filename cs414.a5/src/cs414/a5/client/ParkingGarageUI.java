@@ -37,7 +37,7 @@ import javax.swing.SwingWorker;
 public class ParkingGarageUI extends javax.swing.JFrame {
     
     private ParkingGarageClientImpl parkingGarageService;
-    private PaymentFormFactory paymentFormFactory = new PaymentFormFactory();
+   // private PaymentFormFactory paymentFormFactory = new PaymentFormFactory();
     private String gateId = "1";
     private Boolean isUserViewVisible = true;
     private String enterStatus = "";
@@ -400,7 +400,7 @@ public class ParkingGarageUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnExitActionPerformed
 
     private void jBtnSwitchToAdminViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSwitchToAdminViewActionPerformed
-        jPanelAdminView.setVisible(true);
+        //jPanelAdminView.setVisible(true);
         jPanelUserView.setVisible(false);
     }//GEN-LAST:event_jBtnSwitchToAdminViewActionPerformed
 
@@ -456,7 +456,7 @@ public class ParkingGarageUI extends javax.swing.JFrame {
         Object selectedItem = jComboBoxPaymentMethod.getSelectedItem();
         if (selectedItem instanceof PaymentMethods) {
             PaymentMethods payMethod = (PaymentMethods)selectedItem;
-            JPanel paymentForm = paymentFormFactory.createPaymentForm(payMethod);
+           // JPanel paymentForm = paymentFormFactory.createPaymentForm(payMethod);
             //jPnlPaymentForm.setLayout(new java.awt.BorderLayout());
             //jPnlPaymentForm.add(paymentForm);
             //paymentForm.setVisible(true);
@@ -522,7 +522,7 @@ public class ParkingGarageUI extends javax.swing.JFrame {
             prefix = "Network problem: ";
         }
 
-        this.jLblStatus.setText(prefix + ex.getMessage());
+        //this.jLblStatus.setText(prefix + ex.getMessage());
         Logger.getLogger(ParkingGarageUI.class.getName()).log(Level.SEVERE, null, ex);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
