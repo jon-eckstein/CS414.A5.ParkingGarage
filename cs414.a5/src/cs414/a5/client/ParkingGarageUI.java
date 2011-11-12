@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
 /**
@@ -33,10 +35,9 @@ import javax.swing.SwingWorker;
  * @author jeckstein
  */
 public class ParkingGarageUI extends javax.swing.JFrame {
-
-    private ParkingGarage parkingGarageService;
-    private String serviceHost = "localhost";
-    private String servicePort = "1099";
+    
+    private ParkingGarageClientImpl parkingGarageService;
+    private PaymentFormFactory paymentFormFactory = new PaymentFormFactory();
     private String gateId = "1";
     private Boolean isUserViewVisible = true;
     private String enterStatus = "";
@@ -47,8 +48,10 @@ public class ParkingGarageUI extends javax.swing.JFrame {
     /** Creates new form ParkingGarageUI */
     public ParkingGarageUI() {
         initComponents();
-        initParkingGarageClient();
+        initServiceClient();
         initBackgroundJob();
+                
+       
     }
 
     /** This method is called from within the constructor to
@@ -61,6 +64,10 @@ public class ParkingGarageUI extends javax.swing.JFrame {
     private void initComponents() {
         bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
+        jPnlHeader = new javax.swing.JPanel();
+        jLblGateId = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jPanlMain = new javax.swing.JPanel();
         jPanelUserView = new javax.swing.JPanel();
         jBtnSwitchToAdminView = new javax.swing.JButton();
         jBtnExit = new javax.swing.JButton();
@@ -81,15 +88,36 @@ public class ParkingGarageUI extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLblOpenSpots = new javax.swing.JLabel();
-        jPanelAdminView = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
-        jPanelStatus = new javax.swing.JPanel();
-        jLblStatus = new javax.swing.JLabel();
-        jPnlHeader = new javax.swing.JPanel();
-        jLblGateId = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        jPnlPaymentForm = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jLblGateId.setText(getGateId());
+
+        jLabel2.setText("Welcome to the Parking Garage.  You are at gate ");
+
+        javax.swing.GroupLayout jPnlHeaderLayout = new javax.swing.GroupLayout(jPnlHeader);
+        jPnlHeader.setLayout(jPnlHeaderLayout);
+        jPnlHeaderLayout.setHorizontalGroup(
+            jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPnlHeaderLayout.createSequentialGroup()
+                .addContainerGap(24, Short.MAX_VALUE)
+                .addComponent(jLblGateId, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 631, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(279, 279, 279))
+        );
+        jPnlHeaderLayout.setVerticalGroup(
+            jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPnlHeaderLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLblGateId, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanlMain.setLayout(new java.awt.CardLayout());
 
         jPanelUserView.setName("UserView"); // NOI18N
 
@@ -246,11 +274,23 @@ public class ParkingGarageUI extends javax.swing.JFrame {
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, this, org.jdesktop.beansbinding.ELProperty.create("${currentOpenSpots}"), jLblOpenSpots, org.jdesktop.beansbinding.BeanProperty.create("text"), "bindingCurrentOpen");
         bindingGroup.addBinding(binding);
 
+        javax.swing.GroupLayout jPnlPaymentFormLayout = new javax.swing.GroupLayout(jPnlPaymentForm);
+        jPnlPaymentForm.setLayout(jPnlPaymentFormLayout);
+        jPnlPaymentFormLayout.setHorizontalGroup(
+            jPnlPaymentFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 221, Short.MAX_VALUE)
+        );
+        jPnlPaymentFormLayout.setVerticalGroup(
+            jPnlPaymentFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 222, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout jPanelUserViewLayout = new javax.swing.GroupLayout(jPanelUserView);
         jPanelUserView.setLayout(jPanelUserViewLayout);
         jPanelUserViewLayout.setHorizontalGroup(
             jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelUserViewLayout.createSequentialGroup()
+                .addGap(1511, 1511, 1511)
                 .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelUserViewLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
@@ -258,12 +298,12 @@ public class ParkingGarageUI extends javax.swing.JFrame {
                         .addGap(605, 605, 605)
                         .addComponent(jBtnSwitchToAdminView))
                     .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                        .addContainerGap()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel5)
                         .addGap(18, 18, 18)
                         .addComponent(jLblOpenSpots, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                        .addContainerGap()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanelUserViewLayout.createSequentialGroup()
                                 .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -273,95 +313,44 @@ public class ParkingGarageUI extends javax.swing.JFrame {
                                 .addComponent(jPnlEnter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanelExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addComponent(jPanelExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPnlPaymentForm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelUserViewLayout.setVerticalGroup(
             jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelUserViewLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jBtnSwitchToAdminView))
-                .addGap(26, 26, 26)
-                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(jLblOpenSpots, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(29, 29, 29)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                        .addComponent(jBtnEnter)
-                        .addGap(2, 2, 2)
-                        .addComponent(jBtnExit))
-                    .addComponent(jPnlEnter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(86, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelUserViewLayout.createSequentialGroup()
-                .addContainerGap(73, Short.MAX_VALUE)
-                .addComponent(jPanelExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                        .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jBtnSwitchToAdminView))
+                        .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanelUserViewLayout.createSequentialGroup()
+                                .addGap(26, 26, 26)
+                                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLblOpenSpots, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(29, 29, 29)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanelUserViewLayout.createSequentialGroup()
+                                        .addComponent(jBtnEnter)
+                                        .addGap(2, 2, 2)
+                                        .addComponent(jBtnExit))
+                                    .addComponent(jPnlEnter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanelUserViewLayout.createSequentialGroup()
+                                .addGap(48, 48, 48)
+                                .addComponent(jPnlPaymentForm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jPanelExit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(230, Short.MAX_VALUE))
         );
 
-        jButton2.setText("Switch To User View");
-
-        javax.swing.GroupLayout jPanelAdminViewLayout = new javax.swing.GroupLayout(jPanelAdminView);
-        jPanelAdminView.setLayout(jPanelAdminViewLayout);
-        jPanelAdminViewLayout.setHorizontalGroup(
-            jPanelAdminViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelAdminViewLayout.createSequentialGroup()
-                .addContainerGap(796, Short.MAX_VALUE)
-                .addComponent(jButton2))
-        );
-        jPanelAdminViewLayout.setVerticalGroup(
-            jPanelAdminViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelAdminViewLayout.createSequentialGroup()
-                .addComponent(jButton2)
-                .addContainerGap(301, Short.MAX_VALUE))
-        );
-
-        jPanelStatus.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        javax.swing.GroupLayout jPanelStatusLayout = new javax.swing.GroupLayout(jPanelStatus);
-        jPanelStatus.setLayout(jPanelStatusLayout);
-        jPanelStatusLayout.setHorizontalGroup(
-            jPanelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 943, Short.MAX_VALUE)
-        );
-        jPanelStatusLayout.setVerticalGroup(
-            jPanelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLblStatus, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
-        );
-
-        jLblGateId.setText(getGateId());
-
-        jLabel2.setText("Welcome to the Parking Garage.  You are at gate ");
-
-        javax.swing.GroupLayout jPnlHeaderLayout = new javax.swing.GroupLayout(jPnlHeader);
-        jPnlHeader.setLayout(jPnlHeaderLayout);
-        jPnlHeaderLayout.setHorizontalGroup(
-            jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPnlHeaderLayout.createSequentialGroup()
-                .addGap(314, 314, 314)
-                .addComponent(jLblGateId, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(630, Short.MAX_VALUE))
-            .addGroup(jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPnlHeaderLayout.createSequentialGroup()
-                    .addGap(22, 22, 22)
-                    .addComponent(jLabel2)
-                    .addContainerGap(664, Short.MAX_VALUE)))
-        );
-        jPnlHeaderLayout.setVerticalGroup(
-            jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPnlHeaderLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLblGateId, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
-            .addGroup(jPnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPnlHeaderLayout.createSequentialGroup()
-                    .addGap(13, 13, 13)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
-                    .addContainerGap()))
-        );
+        jPanlMain.add(jPanelUserView, "cardUserView");
+        jPanelUserView.getAccessibleContext().setAccessibleName("");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -369,27 +358,19 @@ public class ParkingGarageUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanelStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanlMain, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPnlHeader, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
-            .addComponent(jPnlHeader, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jPanelUserView, javax.swing.GroupLayout.Alignment.LEADING, 0, 947, Short.MAX_VALUE)
-                    .addComponent(jPanelAdminView, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(jPnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jPanelUserView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jPanelAdminView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(71, 71, 71)
-                .addComponent(jPanelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanlMain, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(1048, Short.MAX_VALUE))
         );
 
         bindingGroup.bind();
@@ -407,8 +388,8 @@ public class ParkingGarageUI extends javax.swing.JFrame {
             printer.printEntryTicket(entry);
             jBtnOpenGate.setEnabled(true);
             jBtnGetTicket.setEnabled(false);
-            setEnterStatus("<html>The ticket has been printed. <br/> Your ticket number is: " + entry.getTicketId() + ". <br/> Please get ticket from printer. <br/> Please press Open Gate.</html>");
-        } catch (RemoteException ex) {
+            setEnterStatus("<html>The ticket has been printed. <br/> Your ticket number is: " + entry.getTicketId() + ". <br/> Please get ticket from printer. <br/> Please press Open Gate.</html>");      
+        } catch (ServiceCommunicationException ex) {
             HandleException(ex);
         } catch (ParkingGarageException ex) {
             HandleException(ex);
@@ -433,8 +414,7 @@ public class ParkingGarageUI extends javax.swing.JFrame {
             parkingGarageService.openGate(gateId);
             setEnterStatus("Gate opened, you have 5 seconds to enter garage. Park safely.");
 
-            SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
-
+            SwingWorker sw = new SwingWorker() {
                 @Override
                 protected Void doInBackground() throws Exception {
                     Thread.currentThread().sleep(5000);
@@ -452,10 +432,9 @@ public class ParkingGarageUI extends javax.swing.JFrame {
             sw.execute();
         } catch (ParkingGarageException ex) {
             HandleException(ex);
-        } catch (RemoteException ex) {
+        } catch (ServiceCommunicationException ex) {
             HandleException(ex);
         }
-
     }//GEN-LAST:event_jBtnOpenGateActionPerformed
 
     private void jBtnGetInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnGetInvoiceActionPerformed
@@ -464,7 +443,7 @@ public class ParkingGarageUI extends javax.swing.JFrame {
             try {
                 ExitEvent exit = parkingGarageService.createExitEvent(ticketNum, new Date());
                 setExitStatus("The total is " + exit.getTotalInvoiceAmount().toPlainString() + ". How would you like to pay?");
-            } catch (RemoteException ex) {
+            } catch (ServiceCommunicationException ex) {
                 HandleException(ex);
             } catch (ParkingGarageException ex) {
                 HandleException(ex);
@@ -477,11 +456,22 @@ public class ParkingGarageUI extends javax.swing.JFrame {
         Object selectedItem = jComboBoxPaymentMethod.getSelectedItem();
         if (selectedItem instanceof PaymentMethods) {
             PaymentMethods payMethod = (PaymentMethods)selectedItem;
-            switch(payMethod){
-                
-            }
+            JPanel paymentForm = paymentFormFactory.createPaymentForm(payMethod);
+            //jPnlPaymentForm.setLayout(new java.awt.BorderLayout());
+            //jPnlPaymentForm.add(paymentForm);
+            //paymentForm.setVisible(true);
+            //jPnlPaymentForm.revalidate();
+            //jPnlPaymentForm.repaint();
+            //this.revalidate();
+            //this.repaint();
             
-            
+            //jPnlPaymentForm.add(new JButton("Dynamic Button"));
+            //jPnlPaymentForm.revalidate(); 
+            //jPanelUserView.revalidate();
+            this.add(new JButton("Dynamic Button"));
+            revalidate();
+            validate();
+            repaint();
         }
 
     }//GEN-LAST:event_jComboBoxPaymentMethodActionPerformed
@@ -520,23 +510,15 @@ public class ParkingGarageUI extends javax.swing.JFrame {
                 new ParkingGarageUI().setVisible(true);
             }
         });
+        
+        
     }
 
-    private void initParkingGarageClient() {
-        try {
-            parkingGarageService = (ParkingGarage) Naming.lookup("rmi://" + serviceHost + ":" + servicePort + "/ParkingGarageService");
-        } catch (NotBoundException ex) {
-            HandleException(ex);
-        } catch (MalformedURLException ex) {
-            HandleException(ex);
-        } catch (RemoteException ex) {
-            HandleException(ex);
-        }
-    }
+    
 
     private void HandleException(Exception ex) {
         String prefix = "";
-        if (ex instanceof RemoteException) {
+        if (ex instanceof ServiceCommunicationException) {
             prefix = "Network problem: ";
         }
 
@@ -550,7 +532,6 @@ public class ParkingGarageUI extends javax.swing.JFrame {
     private javax.swing.JButton jBtnGetTicket;
     private javax.swing.JButton jBtnOpenGate;
     private javax.swing.JButton jBtnSwitchToAdminView;
-    private javax.swing.JButton jButton2;
     private javax.swing.JComboBox jComboBoxPaymentMethod;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -563,13 +544,12 @@ public class ParkingGarageUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLblExitStatus;
     private javax.swing.JLabel jLblGateId;
     private javax.swing.JLabel jLblOpenSpots;
-    private javax.swing.JLabel jLblStatus;
-    private javax.swing.JPanel jPanelAdminView;
     private javax.swing.JPanel jPanelExit;
-    private javax.swing.JPanel jPanelStatus;
     private javax.swing.JPanel jPanelUserView;
+    private javax.swing.JPanel jPanlMain;
     private javax.swing.JPanel jPnlEnter;
     private javax.swing.JPanel jPnlHeader;
+    private javax.swing.JPanel jPnlPaymentForm;
     private javax.swing.JTextField jTxtExitTicketNumber;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
@@ -656,5 +636,12 @@ public class ParkingGarageUI extends javax.swing.JFrame {
         }
 
         return model.toArray();
+    }
+
+    private void initServiceClient() {
+        parkingGarageService = ParkingGarageClientImpl.getInstance();
+        if(parkingGarageService == null){
+            HandleException(new ServiceCommunicationException("Could not connect to parking garage service."));
+        }
     }
 }
