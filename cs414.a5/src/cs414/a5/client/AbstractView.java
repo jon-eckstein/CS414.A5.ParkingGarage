@@ -4,6 +4,8 @@
  */
 package cs414.a5.client;
 
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -15,6 +17,7 @@ import javax.swing.JPanel;
 public abstract class AbstractView extends JPanel {
     
     protected EventAggregator eventAggregator;
+    protected NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
     private ParkingGarageClientImpl parkingGarageService;
     private String gateId="1";
     

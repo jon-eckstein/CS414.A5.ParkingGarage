@@ -14,6 +14,7 @@ import cs414.a5.common.ExitEvent;
 import cs414.a5.common.ParkingGarageException;
 import cs414.a5.common.Utilities;
 import java.awt.CardLayout;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.DefaultComboBoxModel;
@@ -26,10 +27,15 @@ public class ViewExit extends AbstractView {
 
     private ViewLocator viewLocator = new ViewLocator();
     private ExitEvent currentExit;
+    private BigDecimal currentAmountDue = BigDecimal.ZERO;
+    private static final String LOST_TICKET = "LOST";
+    private boolean isTicketRetrieved=false;
+    private boolean isExitPaidInFull=false;
     
     /** Creates new form ViewExit */
     public ViewExit() {        
         initComponents();
+        eventAggregator.subscribe(PaymentCompleteEvent.class, this);
     }
 
     /** This method is called from within the constructor to
@@ -48,6 +54,7 @@ public class ViewExit extends AbstractView {
         cmbPaymentMethod = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         pnlPaymentMethod = new javax.swing.JPanel();
+        btnOpenGate = new javax.swing.JButton();
 
         jLabel1.setText("Enter Ticket Number:");
 
@@ -61,6 +68,7 @@ public class ViewExit extends AbstractView {
         jLabel7.setText("(enter the word \"LOST\" if ticket is lost or damaged)");
 
         cmbPaymentMethod.setModel(new DefaultComboBoxModel( getPaymentMethodsModel() ));
+        cmbPaymentMethod.setEnabled(getIsTicketRetrieved());
         cmbPaymentMethod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbPaymentMethodActionPerformed(evt);
@@ -71,24 +79,29 @@ public class ViewExit extends AbstractView {
 
         pnlPaymentMethod.setLayout(new java.awt.CardLayout());
 
+        btnOpenGate.setText("Open Gate");
+        btnOpenGate.setEnabled(getIsExitPaidInFull());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cmbPaymentMethod, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jLabel7)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btnInvoiceAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(txtTicketNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(cmbPaymentMethod, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jLabel7)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnInvoiceAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtTicketNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(btnOpenGate, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(pnlPaymentMethod, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                 .addContainerGap())
@@ -109,7 +122,9 @@ public class ViewExit extends AbstractView {
                         .addGap(27, 27, 27)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(cmbPaymentMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(cmbPaymentMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(32, 32, 32)
+                        .addComponent(btnOpenGate))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(pnlPaymentMethod, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)))
@@ -121,9 +136,15 @@ public class ViewExit extends AbstractView {
         String ticketNum = txtTicketNumber.getText();
         if (!Utilities.isNullOrEmpty(ticketNum)) {
             try {
-                currentExit = getServiceClient().createExitEvent(ticketNum, new Date());
-                eventAggregator.publish(new StatusEvent("The total is " + currentExit.getTotalInvoiceAmount().toPlainString() + ". Please select payment method."));
-                //setExitStatus("The total is " + exit.getTotalInvoiceAmount().toPlainString() + ". How would you like to pay?");
+                if(ticketNum.toUpperCase().equals(LOST_TICKET))
+                    currentExit = getServiceClient().createFlatRateExitEvent(new Date());
+                else    
+                    currentExit = getServiceClient().createExitEvent(ticketNum, new Date());
+                
+                currentAmountDue = currentExit.getTotalInvoiceAmount();
+                setIsTicketRetrieved(true); 
+                eventAggregator.publish(new StatusEvent("The total is " + currencyFormatter.format(currentAmountDue.doubleValue())  + ". Please select payment method."));                
+                
             } catch (Exception ex) {
                 HandleException(ex);
             } 
@@ -136,7 +157,7 @@ public class ViewExit extends AbstractView {
         if (selectedItem instanceof PaymentMethods) {
             PaymentMethods payMethod = (PaymentMethods)selectedItem;
             viewLocator.showView(pnlPaymentMethod, "Payment" + payMethod);                        
-            //eventAggregator.publish(new InvoiceEvent(currentExit.getTotalInvoiceAmount(), currentExit.getTicketId()));
+            eventAggregator.publish(new InvoiceEvent(currentAmountDue, currentExit.getTicketId()));
         }
     }//GEN-LAST:event_cmbPaymentMethodActionPerformed
     
@@ -150,9 +171,16 @@ public class ViewExit extends AbstractView {
         return model.toArray();
     }
     
+    @Override
+    public <T> void eventOccurred(T payload){
+        if(payload.getClass() == PaymentCompleteEvent.class){
+            handlePayment((PaymentCompleteEvent)payload);
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnInvoiceAmount;
+    private javax.swing.JButton btnOpenGate;
     private javax.swing.JComboBox cmbPaymentMethod;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -160,4 +188,49 @@ public class ViewExit extends AbstractView {
     private javax.swing.JPanel pnlPaymentMethod;
     private javax.swing.JTextField txtTicketNumber;
     // End of variables declaration//GEN-END:variables
+
+    private void handlePayment(PaymentCompleteEvent payEvent) {
+        if(payEvent.getAmountBalance().compareTo(BigDecimal.ZERO) > 0){
+            eventAggregator.publish(new StatusEvent("There is a balance of " + currencyFormatter.format(payEvent.getAmountBalance().doubleValue()) + " due.  Please select payment method for balance."));
+            currentAmountDue = payEvent.getAmountBalance();
+            cmbPaymentMethod.setSelectedIndex(0);            
+        }else{
+            setIsExitPaidInFull(true);            
+            eventAggregator.publish(new StatusEvent("Thank You. Please push button to Open Gate. Have a nice day."));
+        }       
+        
+        viewLocator.showView(pnlPaymentMethod, "Blank");
+    }
+
+    /**
+     * @return the isTicketRetrieved
+     */
+    public boolean getIsTicketRetrieved() {
+        return isTicketRetrieved;
+    }
+
+    /**
+     * @param isTicketRetrieved the isTicketRetrieved to set
+     */
+    public void setIsTicketRetrieved(boolean isTicketRetrieved) {
+        this.isTicketRetrieved = isTicketRetrieved;
+        this.cmbPaymentMethod.setEnabled(isTicketRetrieved);
+        //firePropertyChange("isTicketRetrieved", null, null);
+    }
+
+    /**
+     * @return the isExitPaidInFull
+     */
+    public boolean getIsExitPaidInFull() {
+        return isExitPaidInFull;
+    }
+
+    /**
+     * @param isExitPaidInFull the isExitPaidInFull to set
+     */
+    public void setIsExitPaidInFull(boolean isExitPaidInFull) {
+        this.isExitPaidInFull = isExitPaidInFull;
+        this.btnOpenGate.setEnabled(isExitPaidInFull);
+        //firePropertyChange("isExitPaidInFull", null, null);
+    }
 }

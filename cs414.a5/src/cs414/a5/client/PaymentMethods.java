@@ -10,6 +10,6 @@ package cs414.a5.client;
  */
 public enum PaymentMethods {
     CASH,
-    CREDIT,
+    CARD,
     IOU        
 }

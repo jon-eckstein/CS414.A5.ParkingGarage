@@ -5,6 +5,7 @@
 package cs414.a5.server;
 
 import cs414.a5.common.ParkingGarageException;
+import cs414.a5.common.Rate;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,23 +24,23 @@ public class RateManager {
     }
     
     
-    public BigDecimal getRegularRate(Date entryDateTime, Date exitDateTime) throws ParkingGarageException {
+    public Rate getRegularRate(Date entryDateTime, Date exitDateTime) throws ParkingGarageException {
         
         for(Rate rateRecord : rates){
             if(exitDateTime.before(rateRecord.getEndDateTime()) && entryDateTime.after(rateRecord.getStartDateTime())
                     && !rateRecord.getIsFlatRate())
-                return rateRecord.getRate();            
+                return rateRecord;            
         }
         
         throw new ParkingGarageException("Could not find a rate within specified time period.");
     }
 
-    public BigDecimal getFlatRate(Date exitDateTime) throws ParkingGarageException {
+    public Rate getFlatRate(Date exitDateTime) throws ParkingGarageException {
         
         for(Rate rateRecord : rates){
             if(exitDateTime.before(rateRecord.getEndDateTime()) && exitDateTime.after(rateRecord.getStartDateTime())
                     && rateRecord.getIsFlatRate())
-                return rateRecord.getRate();            
+                return rateRecord;            
         }
         
         throw new ParkingGarageException("Could not find a rate within specified time period.");
@@ -57,7 +58,7 @@ public class RateManager {
             }
             
         }
-        Rate newRate = new Rate(startDate, endDate, rate, isFlatRate);
+        Rate newRate = new RateImpl(startDate, endDate, rate, isFlatRate);
         rates.add(newRate);
     }
     

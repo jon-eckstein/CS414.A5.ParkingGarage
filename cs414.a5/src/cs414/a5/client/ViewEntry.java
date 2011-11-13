@@ -4,30 +4,29 @@
  */
 
 /*
- * viewEnter.java
+ * ViewEntry.java
  *
- * Created on Nov 12, 2011, 10:17:14 AM
+ * Created on Nov 12, 2011, 2:51:32 PM
  */
 package cs414.a5.client;
 
 import cs414.a5.common.EntryEvent;
-import cs414.a5.common.ParkingGarageException;
 import java.util.Date;
 
 /**
  *
  * @author jeckstein
  */
-public class ViewEnter extends AbstractView {
-    
+public class ViewEntry extends AbstractView {
+
     private Printer printer = new PrinterFakeImpl();
     
-    public ViewEnter(){
-        super();
-        initComponents();         
+    /** Creates new form ViewEntry */
+    public ViewEntry() {
+        initComponents();
+        pnlRates.add(new ViewRateSchedule());        
+        pnlRates.validate();
     }
-    /** Creates new form viewEnter */
-    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -41,8 +40,9 @@ public class ViewEnter extends AbstractView {
         btnGetTicket = new javax.swing.JButton();
         btnOpenGate = new javax.swing.JButton();
         btnCloseGate = new javax.swing.JButton();
+        pnlRates = new javax.swing.JPanel();
 
-        btnGetTicket.setText("Get Ticket");
+        btnGetTicket.setText("Get Entry Ticket");
         btnGetTicket.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnGetTicketActionPerformed(evt);
@@ -58,33 +58,40 @@ public class ViewEnter extends AbstractView {
 
         btnCloseGate.setText("Close Gate");
 
+        pnlRates.setLayout(new java.awt.GridLayout());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(96, 96, 96)
+                .addGap(43, 43, 43)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnCloseGate, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnOpenGate, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnGetTicket, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(125, Short.MAX_VALUE))
+                    .addComponent(btnCloseGate, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnOpenGate, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnGetTicket, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(38, 38, 38)
+                .addComponent(pnlRates, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(43, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(34, 34, 34)
-                .addComponent(btnGetTicket)
-                .addGap(18, 18, 18)
-                .addComponent(btnOpenGate)
-                .addGap(18, 18, 18)
-                .addComponent(btnCloseGate)
-                .addContainerGap(155, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnlRates, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnGetTicket)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnOpenGate)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnCloseGate)))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnGetTicketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGetTicketActionPerformed
-         try {
+        try {
             Date entryDate = new Date();
             EntryEvent entry = getServiceClient().createEntryEvent(entryDate, getGateId());
             printer.printEntryTicket(entry);
@@ -96,12 +103,10 @@ public class ViewEnter extends AbstractView {
         } catch (Exception ex) {
             HandleException(ex);
         } 
-        
     }//GEN-LAST:event_btnGetTicketActionPerformed
 
     private void btnOpenGateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenGateActionPerformed
-        
-        //setEnterStatus("Gate opening...");
+                
         eventAggregator.publish(new StatusEvent("Gate opening..."));
         try {
             getServiceClient().openGate(getGateId());
@@ -111,10 +116,14 @@ public class ViewEnter extends AbstractView {
         } 
     }//GEN-LAST:event_btnOpenGateActionPerformed
 
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseGate;
     private javax.swing.JButton btnGetTicket;
     private javax.swing.JButton btnOpenGate;
+    private javax.swing.JPanel pnlRates;
     // End of variables declaration//GEN-END:variables
+
+    
+
+
 }

@@ -23,18 +23,24 @@ public class ViewLocator {
     
     public void showView(JPanel parent, String key){
         CardLayout layout = (CardLayout) parent.getLayout();
+        String packageName =  this.getClass().getPackage().getName();
+        String className = packageName + "." + viewPrefix + key;
+        
         for(Component c : parent.getComponents()){
-            if(c.getName() == viewPrefix + key){
-                    layout.show(parent, c.getName());
-                    return;
+            if(c.getClass().getName().equals(className)){
+                parent.remove(c);
+                //layout.removeLayoutComponent(c);
+                //layout.show(parent, c.getName());
+                //return;
             }                
         }
         try {
-            String packageName =  this.getClass().getPackage().getName();
-            JPanel view = (JPanel)Class.forName(packageName + "." + viewPrefix + key).newInstance();            
+            
+            JPanel view = (JPanel)Class.forName(className).newInstance();            
             parent.add(view.getName(), view);
             parent.validate();                        
-            layout.show(parent, view.getName());
+            //layout.show(parent, view.getName());
+            layout.last(parent);
         } catch (Exception ex) {
             Logger.getLogger(ViewLocator.class.getName()).log(Level.SEVERE, null, ex);
         }                    

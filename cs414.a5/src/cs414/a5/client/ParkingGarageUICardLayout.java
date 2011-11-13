@@ -10,10 +10,6 @@
  */
 package cs414.a5.client;
 
-import java.awt.CardLayout;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JButton;
 import javax.swing.SwingWorker;
 
 /**
@@ -180,8 +176,7 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
 
     private void btnEnterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnterActionPerformed
         
-        viewLocator.showView(this.pnlEnterExit, "Enter");
-        
+        viewLocator.showView(this.pnlEnterExit, "Entry");        
     }//GEN-LAST:event_btnEnterActionPerformed
 
     /**

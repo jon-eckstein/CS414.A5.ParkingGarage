@@ -22,6 +22,7 @@ public class ExitEventImpl implements Serializable,ExitEvent {
     
     private EntryEvent entryEvent;
     private ArrayList<Payment> payments;
+    private String dummyTicketId; 
     private Iou iou;
     private Date exitDateTime;    
     private BigDecimal rate;    
@@ -35,6 +36,14 @@ public class ExitEventImpl implements Serializable,ExitEvent {
         if(entryEvent == null)
             isFlatRate = true;
     }
+    
+    public ExitEventImpl(String dummyTicketId, Date exitDateTime, BigDecimal rate){
+        this.exitDateTime = exitDateTime;
+        this.rate = rate;
+        this.dummyTicketId = dummyTicketId;
+        isFlatRate = true;
+    }
+    
     
     
     @Override
@@ -51,7 +60,7 @@ public class ExitEventImpl implements Serializable,ExitEvent {
         if(entryEvent != null)
             return entryEvent.getTicketId();
         else
-            return null;
+            return dummyTicketId;
     }
    
    

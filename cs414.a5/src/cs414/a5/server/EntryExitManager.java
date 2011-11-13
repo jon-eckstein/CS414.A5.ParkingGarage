@@ -23,7 +23,8 @@ public class EntryExitManager {
     Map<String,EntryEvent> openEntries;
     ArrayList<ExitEvent> exitEvents;
     RateManager rateManager;
-    private int ticketIdCounter = 1;     
+    private int ticketIdCounter = 1;
+    private int lostTicketIdCounter = 1;
     
     public EntryExitManager(RateManager rm){
         rateManager = rm;
@@ -62,7 +63,7 @@ public class EntryExitManager {
         }else{
             //lost or damaged ticket, flat rate transaction...
             rate = getRate(exitDateTime);
-            exit = new ExitEventImpl(null, exitDateTime, rate);            
+            exit = new ExitEventImpl(getNextLostTicketId(), exitDateTime, rate);            
         }
         
         exitEvents.add(exit);
@@ -73,7 +74,7 @@ public class EntryExitManager {
         return createExitEvent(ticketId, new Date());
     }
     
-           
+               
     public EntryEvent getEntryEvent(String ticketId) throws ParkingGarageException {
         if(openEntries.containsKey(ticketId))
             return openEntries.get(ticketId);
@@ -98,15 +99,23 @@ public class EntryExitManager {
     }
     
     private BigDecimal getRate(Date entryDate, Date exitDate) throws ParkingGarageException{
-        return rateManager.getRegularRate(entryDate, exitDate);
+        return rateManager.getRegularRate(entryDate, exitDate).getRate();
     }
     
     private BigDecimal getRate(Date exitDateTime) throws ParkingGarageException{
-        return rateManager.getFlatRate(exitDateTime);
+        return rateManager.getFlatRate(exitDateTime).getRate();
     }
     
     private synchronized String getNextTicketId(){
         return Integer.toString(ticketIdCounter++);
+    }
+    
+    /**
+     * Using a dummy ticket id to mark all lost or damaged transaction.
+     * @return 
+     */
+    private synchronized String getNextLostTicketId(){
+        return "lt" + Integer.toString(ticketIdCounter++);
     }
     
 }

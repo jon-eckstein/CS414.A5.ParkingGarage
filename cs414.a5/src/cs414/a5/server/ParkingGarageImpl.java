@@ -8,6 +8,7 @@ import cs414.a5.common.EntryEvent;
 import cs414.a5.common.ExitEvent;
 import cs414.a5.common.ParkingGarage;
 import cs414.a5.common.ParkingGarageException;
+import cs414.a5.common.Rate;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,7 +48,7 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
    }
    
    private void setDefaultRates() throws ParseException, Exception{
-       SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yy h:mm a"); 
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yy h:mm a"); 
         Date startDate = dateFormatter.parse("01/01/2011 12:00 AM");
         Date endDate = dateFormatter.parse("12/31/2011 11:59 PM");
         BigDecimal hourlyRate = new BigDecimal("10.00");
@@ -82,6 +83,11 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
        return exit;        
    }
   
+     @Override
+   public ExitEvent createExitEvent(Date exitDateTime) throws ParkingGarageException, java.rmi.RemoteException{
+       ExitEvent exit = entryExitManager.createExitEvent(null, exitDateTime);
+       return exit;        
+   }
     
     @Override
    public void processCardPayment(BigDecimal amount, String cardNumber, Date expireDate, String ticketId) throws ParkingGarageException, java.rmi.RemoteException{       
@@ -140,6 +146,13 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
             throw new ParkingGarageException("Could not find gate " + gateId);               
     }
     
+    @Override
+    public Rate[] getCurrentRates() throws ParkingGarageException{
+        Rate[] rates = new Rate[2];
+        rates[0] = rateManager.getRegularRate(new Date(), new Date());
+        rates[1] = rateManager.getFlatRate(new Date());
+        return rates;
+    }
     
     private void initGates() {        
         for(int i=0;i<=totalGates;i++){

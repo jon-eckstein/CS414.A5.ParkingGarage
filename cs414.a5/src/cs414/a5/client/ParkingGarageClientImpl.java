@@ -8,9 +8,11 @@ import cs414.a5.common.EntryEvent;
 import cs414.a5.common.ExitEvent;
 import cs414.a5.common.ParkingGarage;
 import cs414.a5.common.ParkingGarageException;
+import cs414.a5.common.Rate;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -101,12 +103,57 @@ public class ParkingGarageClientImpl {
         }
     }
     
+    public ExitEvent createFlatRateExitEvent(Date date) throws ParkingGarageException, ServiceCommunicationException {
+        try {
+            return parkingGarageService.createExitEvent(date);            
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem creating exit event: " + ex.getMessage());
+        }
+    }
+    
     public int getAvailableSpotCount() throws ServiceCommunicationException{
         try {
             return parkingGarageService.getAvailableSpotCount();
         } catch (RemoteException ex) {
             Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
             throw new ServiceCommunicationException("Problem getting spot count: " + ex.getMessage());
+        }
+    }
+    
+    public void processCashPayment(BigDecimal amount, String ticketId) throws ParkingGarageException, ServiceCommunicationException {
+        try {
+            parkingGarageService.processCashPayment(amount, ticketId);            
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem processing cash payment: " + ex.getMessage());
+        }
+    }
+    
+    public void processCardPayment(BigDecimal amount, String cardNumber, Date expireDate, String ticketId) throws ParkingGarageException, ServiceCommunicationException{
+        try {
+            parkingGarageService.processCardPayment(amount, cardNumber, expireDate, ticketId);            
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem processing card payment: " + ex.getMessage());
+        }
+    }
+    
+    public void processIou(BigDecimal amount, String customerName, String customerPhone, String customerAddress, String ticketId) throws ParkingGarageException, ServiceCommunicationException{
+        try {
+            parkingGarageService.processIou(amount, customerName, customerPhone, customerAddress, ticketId);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem processing IOU: " + ex.getMessage());
+        }
+    }
+    
+    public Rate[] getCurrentRates() throws ParkingGarageException, ServiceCommunicationException{
+        try {
+            return parkingGarageService.getCurrentRates();
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem getting current rate schedule: " + ex.getMessage());
         }
     }
     

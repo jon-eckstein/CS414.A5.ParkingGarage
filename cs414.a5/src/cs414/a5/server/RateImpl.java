@@ -4,6 +4,8 @@
  */
 package cs414.a5.server;
 
+import cs414.a5.common.Rate;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -11,14 +13,14 @@ import java.util.Date;
  *
  * @author jeckstein
  */
-public class Rate {
+public class RateImpl implements Serializable, Rate {
     
     private Date startDateTime;
     private Date endDateTime;
     private BigDecimal rate;
     private boolean isFlatRate;
 
-    Rate(Date startDateTime, Date endDateTime, BigDecimal rate, boolean isFlatRate) {
+    RateImpl(Date startDateTime, Date endDateTime, BigDecimal rate, boolean isFlatRate) {
         this.endDateTime = endDateTime;
         this.startDateTime = startDateTime;
         this.rate = rate;
@@ -28,6 +30,7 @@ public class Rate {
     /**
      * @return the startDateTime
      */
+    @Override
     public Date getStartDateTime() {
         return startDateTime;
     }
@@ -42,6 +45,7 @@ public class Rate {
     /**
      * @return the endDateTime
      */
+    @Override
     public Date getEndDateTime() {
         return endDateTime;
     }
@@ -56,6 +60,7 @@ public class Rate {
     /**
      * @return the rate
      */
+    @Override
     public BigDecimal getRate() {
         return rate;
     }
@@ -70,6 +75,7 @@ public class Rate {
     /**
      * @return the isFlatRate
      */
+    @Override
     public boolean getIsFlatRate() {
         return isFlatRate;
     }

@@ -17,26 +17,33 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="96" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="btnCloseGate" alignment="0" min="-2" pref="179" max="-2" attributes="0"/>
-                  <Component id="btnOpenGate" alignment="0" min="-2" pref="179" max="-2" attributes="0"/>
-                  <Component id="btnGetTicket" alignment="0" min="-2" pref="179" max="-2" attributes="0"/>
+                  <Component id="btnCloseGate" alignment="0" min="-2" pref="148" max="-2" attributes="0"/>
+                  <Component id="btnOpenGate" alignment="0" min="-2" pref="148" max="-2" attributes="0"/>
+                  <Component id="btnGetTicket" alignment="0" min="-2" pref="148" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="125" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
+              <Component id="pnlRates" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="43" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
-              <Component id="btnGetTicket" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="btnOpenGate" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="btnCloseGate" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="155" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="pnlRates" alignment="0" pref="111" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="btnGetTicket" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="btnOpenGate" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="btnCloseGate" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -44,7 +51,7 @@
   <SubComponents>
     <Component class="javax.swing.JButton" name="btnGetTicket">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Get Ticket"/>
+        <Property name="text" type="java.lang.String" value="Get Entry Ticket"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGetTicketActionPerformed"/>
@@ -63,5 +70,12 @@
         <Property name="text" type="java.lang.String" value="Close Gate"/>
       </Properties>
     </Component>
+    <Container class="javax.swing.JPanel" name="pnlRates">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+        <Property name="columns" type="int" value="0"/>
+        <Property name="rows" type="int" value="1"/>
+      </Layout>
+    </Container>
   </SubComponents>
 </Form>
