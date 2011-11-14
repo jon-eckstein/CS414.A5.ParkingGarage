@@ -4,6 +4,8 @@
  */
 package cs414.a5.server;
 
+import cs414.a5.common.UsageReportViewModel;
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -13,48 +15,42 @@ import java.util.Date;
  */
 public class ReportManager {
    
+    ReportAggregationStrategyFactory strategyFactory;
     EntryExitManager entryExitManager;
     int totalSpots;
     
     public ReportManager(EntryExitManager eem, int totalSpots){
         entryExitManager = eem;
-        this.totalSpots = totalSpots;               
+        this.totalSpots = totalSpots;  
+        strategyFactory = new ReportAggregationStrategyFactory();
     }
     
     public UsageReportViewModel getUsageReport(Date startDate, Date endDate, int delimiter){
         
-        UsageReportViewModel viewModel = new UsageReportViewModel(startDate, endDate, delimiter);
-        
-        EntryEventImpl[] currentEntryEvents = entryExitManager.getCurrentEntryEvents();
+        ReportAggregationStrategy strategy = strategyFactory.getStrategy(delimiter);
+        UsageReportViewModelImpl viewModel = new UsageReportViewModelImpl(startDate, endDate, delimiter);                        
         ExitEventImpl[] exitEvents = entryExitManager.getExitEvents();
-        
+                      
         Calendar calCounter=Calendar.getInstance();
         Calendar calEnd = Calendar.getInstance();        
         Calendar entryExitCal = Calendar.getInstance();
         
         for(calCounter.setTime(startDate), calEnd.setTime(endDate); calCounter.before(calEnd); calCounter.add(delimiter, 1)){
-            int delimeterCounter = 0;                
-           
-            for(EntryEventImpl entry : currentEntryEvents){
-                entryExitCal.setTime(entry.getEntryDate());
-                if(entryExitCal.after(calCounter))
-                    delimeterCounter++;
-            }
+            int delimeterCounter = 0;
+            BigDecimal chargeCounter = BigDecimal.ZERO;
             
             for(ExitEventImpl exit : exitEvents){
-                entryExitCal.setTime(exit.getEntryDate());
-                Date calCounterDate = calCounter.getTime();
-                boolean isWithin = isWithinRange(exit, calCounterDate); 
-                        //(calCounterDate.before(exit.getExitDate()) 
-                        //&& calCounterDate.after(exit.getEntryDate()));
+                entryExitCal.setTime(exit.getEntryDate());                
+                boolean isWithin = strategy.isExitWithinRange(exit, calCounter);                        
                 if(isWithin){
                     delimeterCounter++;
+                    chargeCounter = chargeCounter.add(exit.getTotalInvoiceAmount());
                 }
             }
             
-            UsageReportDetail detail = new UsageReportDetail(calCounter.getTime(), 
-                    calCounter.get(delimiter), 
-                    delimeterCounter, delimeterCounter / (double)totalSpots); 
+            UsageReportDetailImpl detail = new UsageReportDetailImpl(getDetailHeader(delimiter, calCounter), 
+                                                                    calCounter.get(delimiter), 
+                                                                    delimeterCounter, delimeterCounter / (double)totalSpots, chargeCounter); 
             
             viewModel.addDetail(detail);                                               
         }
@@ -62,9 +58,15 @@ public class ReportManager {
         return viewModel;        
     }
     
-    private boolean isWithinRange(ExitEventImpl exit, Date calDate) {          
-        //return (calDate.before(exit.getExitDate()) && calDate.after(exit.getEntryDate()));
-        return (calDate.compareTo(exit.getExitDate()) <=0 && calDate.compareTo(exit.getEntryDate()) <=0);
+    
+    private Object getDetailHeader(int delimiter, Calendar counterDate){
+        switch(delimiter){
+            case Calendar.DATE: return counterDate.getTime(); 
+            case Calendar.MONTH : return String.valueOf(counterDate.get(Calendar.MONTH)+1) + "-" +  String.valueOf(counterDate.get(Calendar.YEAR));
+            case Calendar.YEAR : return String.valueOf(counterDate.get(Calendar.YEAR));
+        }
+        return null;
     }
+        
     
 }

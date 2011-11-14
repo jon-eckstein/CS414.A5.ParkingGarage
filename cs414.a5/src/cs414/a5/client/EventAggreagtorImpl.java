@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class EventAggreagtorImpl implements EventAggregator {
     
     private static EventAggreagtorImpl instance;
-    private ArrayList<SimpleEntry<Class,AbstractView>> subscriberList = new ArrayList<AbstractMap.SimpleEntry<Class, AbstractView>>(); 
+    private ArrayList<SimpleEntry<Class,EventObserver>> subscriberList = new ArrayList<AbstractMap.SimpleEntry<Class, EventObserver>>(); 
     
     private EventAggreagtorImpl(){        
     }
@@ -27,15 +27,15 @@ public class EventAggreagtorImpl implements EventAggregator {
     }
     
     @Override
-    public void subscribe(Class eventClass, AbstractView view)
+    public void subscribe(Class eventClass, EventObserver observer)
     {
-        subscriberList.add(new SimpleEntry<Class, AbstractView>(eventClass, view));
+        subscriberList.add(new SimpleEntry<Class, EventObserver>(eventClass, observer));
     }
     @Override
-    public void unsubscribe(Class eventClass, AbstractView view)
+    public void unsubscribe(Class eventClass, EventObserver observer)
     {
-        for(SimpleEntry<Class,AbstractView> entry : subscriberList){
-            if(entry.getKey() == eventClass && entry.getValue() == view){
+        for(SimpleEntry<Class,EventObserver> entry : subscriberList){
+            if(entry.getKey() == eventClass && entry.getValue() == observer){
                 subscriberList.remove(entry);
             }
         }        
@@ -47,9 +47,9 @@ public class EventAggreagtorImpl implements EventAggregator {
     public <T> void publish(T payload)
     {
         Class eventClass= payload.getClass();
-        for(SimpleEntry<Class,AbstractView> entry : subscriberList){
+        for(SimpleEntry<Class,EventObserver> entry : subscriberList){
             if(entry.getKey() == eventClass)
-                entry.getValue().eventOccurred(payload);
+                entry.getValue().notifyOnEvent(payload);
         }        
     }
     

@@ -14,7 +14,7 @@ import javax.swing.JPanel;
  *
  * @author jeckstein
  */
-public abstract class AbstractView extends JPanel {
+public abstract class AbstractView extends JPanel implements EventObserver {
     
     protected EventAggregator eventAggregator;
     protected NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
@@ -31,12 +31,12 @@ public abstract class AbstractView extends JPanel {
     protected ParkingGarageClientImpl getServiceClient() {
         parkingGarageService = ParkingGarageClientImpl.getInstance();
         if(parkingGarageService == null){
-            HandleException(new ServiceCommunicationException("Could not connect to parking garage service."));            
+            handleException(new ServiceCommunicationException("Could not connect to parking garage service."));            
         }        
         return parkingGarageService;
     }
     
-    protected void HandleException(Exception ex) {
+    protected void handleException(Exception ex) {
         eventAggregator.publish(new ExceptionOccuredEvent(ex));               
         Logger.getLogger(ParkingGarageUI.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -55,10 +55,8 @@ public abstract class AbstractView extends JPanel {
         this.gateId = gateId;
     }
     
-    protected <T> void eventOccurred(T payload) {}
-        
-    
-    
+    @Override
+    public <T> void notifyOnEvent(T payload) {}               
           
     
 }

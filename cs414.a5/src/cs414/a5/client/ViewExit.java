@@ -23,7 +23,7 @@ import javax.swing.DefaultComboBoxModel;
  *
  * @author jeckstein
  */
-public class ViewExit extends AbstractView {
+public class ViewExit extends AbstractEntryExitView {
 
     private ViewLocator viewLocator = new ViewLocator();
     private ExitEvent currentExit;
@@ -81,6 +81,11 @@ public class ViewExit extends AbstractView {
 
         btnOpenGate.setText("Open Gate");
         btnOpenGate.setEnabled(getIsExitPaidInFull());
+        btnOpenGate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenGateActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -146,7 +151,7 @@ public class ViewExit extends AbstractView {
                 eventAggregator.publish(new StatusEvent("The total is " + currencyFormatter.format(currentAmountDue.doubleValue())  + ". Please select payment method."));                
                 
             } catch (Exception ex) {
-                HandleException(ex);
+                handleException(ex);
             } 
         }
     }//GEN-LAST:event_btnInvoiceAmountActionPerformed
@@ -160,6 +165,22 @@ public class ViewExit extends AbstractView {
             eventAggregator.publish(new InvoiceEvent(currentAmountDue, currentExit.getTicketId()));
         }
     }//GEN-LAST:event_cmbPaymentMethodActionPerformed
+
+    private void btnOpenGateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenGateActionPerformed
+        
+         eventAggregator.publish(new StatusEvent("Gate opening..."));
+        try {
+            getServiceClient().openGate(getGateId());
+            eventAggregator.publish(new StatusEvent("Gate opened. Thank you. Drive carefully. Gate will close shortly."));                        
+            btnOpenGate.setEnabled(false);
+            btnInvoiceAmount.setEnabled(false);
+            btnOpenGate.setEnabled(false);
+            closeGate();
+        } catch (Exception ex) {
+            handleException(ex);
+        } 
+        
+    }//GEN-LAST:event_btnOpenGateActionPerformed
     
     private Object[] getPaymentMethodsModel() {
         ArrayList<Object> model = new ArrayList<Object>();
@@ -172,7 +193,7 @@ public class ViewExit extends AbstractView {
     }
     
     @Override
-    public <T> void eventOccurred(T payload){
+    public <T> void notifyOnEvent(T payload){
         if(payload.getClass() == PaymentCompleteEvent.class){
             handlePayment((PaymentCompleteEvent)payload);
         }

@@ -99,11 +99,11 @@ public class EntryExitManager {
     }
     
     private BigDecimal getRate(Date entryDate, Date exitDate) throws ParkingGarageException{
-        return rateManager.getRegularRate(entryDate, exitDate).getRate();
+        return rateManager.getRegularRate().getRate();
     }
     
     private BigDecimal getRate(Date exitDateTime) throws ParkingGarageException{
-        return rateManager.getFlatRate(exitDateTime).getRate();
+        return rateManager.getFlatRate().getRate();
     }
     
     private synchronized String getNextTicketId(){
@@ -116,6 +116,12 @@ public class EntryExitManager {
      */
     private synchronized String getNextLostTicketId(){
         return "lt" + Integer.toString(ticketIdCounter++);
+    }
+
+    public void cancelEntry(String ticketId) throws ParkingGarageException {
+        EntryEvent entry = openEntries.get(ticketId);
+        if(entry == null) throw new ParkingGarageException("Could not find entry with given ticket ID.");
+        openEntries.remove(ticketId);               
     }
     
 }

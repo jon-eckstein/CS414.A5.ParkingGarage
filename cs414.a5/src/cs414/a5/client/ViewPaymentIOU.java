@@ -12,6 +12,7 @@ package cs414.a5.client;
 
 import cs414.a5.common.Utilities;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  *
@@ -215,38 +216,49 @@ public class ViewPaymentIOU extends AbstractPaymentView {
         
         try{
             if(validateForm()){
-                getServiceClient().processIou(getPayAmount(), getFirstName() + getFirstName(), getPhone(), getStreetAddress() + getCityAddress() + getStateAddress(), getTicketId());
-                 eventAggregator.publish(new PaymentCompleteEvent(getTicketId(), getPayAmount(), getBalanceAmount()));
+                BigDecimal safePayAmount =  new BigDecimal(getPayAmount());
+                getServiceClient().processIou(safePayAmount, getFirstName() + getFirstName(), getPhone(), getStreetAddress() + getCityAddress() + getStateAddress(), getTicketId());
+                 eventAggregator.publish(new PaymentCompleteEvent(getTicketId(), safePayAmount, getBalanceAmount()));
             }else{
                 eventAggregator.publish(new StatusEvent("Please fill in all fields and try again."));                       
             }
         }catch(Exception ex){
-            HandleException(ex);
+            handleException(ex);
         }
         
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     private boolean validateForm(){
         
-        if(Utilities.isNullOrEmpty(getFirstName()))
+        try{
+            
+            BigDecimal dPay =  new BigDecimal(getPayAmount());
+            
+            if(dPay.compareTo(BigDecimal.ZERO) <= 0)
+                return false;
+            
+            if(Utilities.isNullOrEmpty(getFirstName()))
+                return false;
+
+            if(Utilities.isNullOrEmpty(getLastName()))    
+                return false;
+
+            if(Utilities.isNullOrEmpty(getStreetAddress()))    
+                return false;
+
+            if(Utilities.isNullOrEmpty(getCityAddress()))    
+                return false;
+
+            if(Utilities.isNullOrEmpty(getStateAddress()))    
+                return false;
+
+            if(Utilities.isNullOrEmpty(getPhone()))    
+                return false;
+
+            return true;        
+        }catch(Exception ex){
             return false;
-        
-        if(Utilities.isNullOrEmpty(getLastName()))    
-            return false;
-        
-        if(Utilities.isNullOrEmpty(getStreetAddress()))    
-            return false;
-        
-        if(Utilities.isNullOrEmpty(getCityAddress()))    
-            return false;
-        
-        if(Utilities.isNullOrEmpty(getStateAddress()))    
-            return false;
-        
-        if(Utilities.isNullOrEmpty(getPhone()))    
-            return false;
-        
-        return true;        
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

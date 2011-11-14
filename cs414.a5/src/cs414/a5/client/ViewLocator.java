@@ -6,8 +6,6 @@ package cs414.a5.client;
 
 import java.awt.CardLayout;
 import java.awt.Component;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 /**
@@ -16,34 +14,38 @@ import javax.swing.JPanel;
  */
 public class ViewLocator {
     
+    ViewLocationStrategy locationStrategy;
+    
     private String viewPrefix = "View"; 
-    public ViewLocator(){
-        
+    public ViewLocator(ViewLocationStrategy strategy){
+        locationStrategy = strategy;
     }
     
-    public void showView(JPanel parent, String key){
-        CardLayout layout = (CardLayout) parent.getLayout();
-        String packageName =  this.getClass().getPackage().getName();
-        String className = packageName + "." + viewPrefix + key;
-        
-        for(Component c : parent.getComponents()){
-            if(c.getClass().getName().equals(className)){
-                parent.remove(c);
-                //layout.removeLayoutComponent(c);
-                //layout.show(parent, c.getName());
-                //return;
-            }                
-        }
-        try {
+    public ViewLocator(){
+        this(new PrefixLocationStrategy());
             
-            JPanel view = (JPanel)Class.forName(className).newInstance();            
-            parent.add(view.getName(), view);
-            parent.validate();                        
-            //layout.show(parent, view.getName());
+    }
+    
+    
+    public void showView(JPanel parent, String key){
+                                
+        JPanel foundView = locationStrategy.findView(key);
+        
+        if(foundView != null){
+            CardLayout layout = (CardLayout) parent.getLayout();
+            String className = foundView.getClass().getName();
+
+            //remove the component in order to refresh it's fields...
+            for(Component c : parent.getComponents()){
+                if(c.getClass().getName().equals(className)){
+                    parent.remove(c);                
+                }                
+            }
+            
+            parent.add(foundView.getName(), foundView);
+            parent.validate();                                    
             layout.last(parent);
-        } catch (Exception ex) {
-            Logger.getLogger(ViewLocator.class.getName()).log(Level.SEVERE, null, ex);
-        }                    
+        }                   
     }
     
 }

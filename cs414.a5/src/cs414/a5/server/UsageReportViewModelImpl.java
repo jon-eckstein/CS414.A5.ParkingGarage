@@ -4,6 +4,9 @@
  */
 package cs414.a5.server;
 
+import cs414.a5.common.UsageReportDetail;
+import cs414.a5.common.UsageReportViewModel;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -11,7 +14,7 @@ import java.util.Date;
  *
  * @author jeckstein
  */
-public class UsageReportViewModel {
+public class UsageReportViewModelImpl implements Serializable, UsageReportViewModel {
     
     private Date startDate;
     private Date endDate;
@@ -19,16 +22,17 @@ public class UsageReportViewModel {
     
     ArrayList<UsageReportDetail> reportDetail = new ArrayList<UsageReportDetail>();
     
-    public UsageReportViewModel(Date startDate, Date endDate, int delimiter){
+    public UsageReportViewModelImpl(Date startDate, Date endDate, int delimiter){
         this.startDate = startDate;
         this.endDate = endDate;
         this.delimiter = delimiter;
     }
     
-    public void addDetail(UsageReportDetail detail){
+    public void addDetail(UsageReportDetailImpl detail){
         reportDetail.add(detail);
     }
     
+    @Override
     public ArrayList<UsageReportDetail> getReportDetail(){
         return reportDetail;
     }
@@ -36,6 +40,7 @@ public class UsageReportViewModel {
     /**
      * @return the startDate
      */
+    @Override
     public Date getStartDate() {
         return startDate;
     }
@@ -50,6 +55,7 @@ public class UsageReportViewModel {
     /**
      * @return the endDate
      */
+    @Override
     public Date getEndDate() {
         return endDate;
     }
@@ -64,6 +70,7 @@ public class UsageReportViewModel {
     /**
      * @return the delimiter
      */
+    @Override
     public int getDelimiter() {
         return delimiter;
     }

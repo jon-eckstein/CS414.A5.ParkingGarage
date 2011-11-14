@@ -10,6 +10,10 @@
  */
 package cs414.a5.client;
 
+import java.util.Calendar;
+import java.util.Date;
+import javax.swing.SwingWorker;
+
 /**
  *
  * @author jeckstein
@@ -17,11 +21,17 @@ package cs414.a5.client;
 public class ViewStatusMessage extends AbstractView {
 
       private String message; 
+      private static final int MESSAGE_CHECK_INTERVAL_MILLI=500;
+      private static final int MESSAGE_KEEP_DURATION_SECS=3;
+      
+      private Date messageLastSet = new Date(); 
+      
     
     /** Creates new form ViewStatusMessage */
     public ViewStatusMessage() {
         super();
         initComponents();  
+        initStaleMessageCheck();
         eventAggregator.subscribe(StatusEvent.class, this);
         eventAggregator.subscribe(ExceptionOccuredEvent.class, this);
     }
@@ -67,14 +77,16 @@ public class ViewStatusMessage extends AbstractView {
     // End of variables declaration//GEN-END:variables
 
     @Override
-    protected <T> void eventOccurred(T payload) {
+    public <T> void notifyOnEvent(T payload) {
         if(payload.getClass() == StatusEvent.class){            
             this.setMessage(((StatusEvent)payload).getMessage());
         }
         
         if(payload.getClass() == ExceptionOccuredEvent.class){
             this.setMessage(((ExceptionOccuredEvent)payload).getException().getMessage());
-        }        
+        }
+        
+        
     }
 
     /**
@@ -89,8 +101,31 @@ public class ViewStatusMessage extends AbstractView {
      */
     public void setMessage(String message) {
         this.message = message;
+        messageLastSet = new Date();
         firePropertyChange("message", null, null);
+                
     }
+
+    private void initStaleMessageCheck() {
+        SwingWorker sw = new SwingWorker() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    while(true){
+                        Thread.currentThread().sleep(MESSAGE_CHECK_INTERVAL_MILLI);
+                        Date now = new Date();
+                        long seconds = (now.getTime()/1000) - (messageLastSet.getTime()/1000);
+                       
+                        if(seconds > MESSAGE_KEEP_DURATION_SECS && !message.equals(""))
+                            setMessage("");                                        
+                    }
+                }
+
+                
+            };
+            sw.execute();
+    }
+
+    
     
     
 }

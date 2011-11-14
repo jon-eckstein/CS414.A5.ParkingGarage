@@ -31,7 +31,7 @@ public interface ParkingGarage extends java.rmi.Remote  {
 
     void processIou(BigDecimal amount, String customerName, String customerPhone, String customerAddress, String ticketId) throws ParkingGarageException, java.rmi.RemoteException;
 
-    void setRate(Date startDate, Date endDate, BigDecimal rate, boolean isFlatRate) throws ParkingGarageException, java.rmi.RemoteException;
+    void setRate(BigDecimal rate, boolean isFlatRate) throws ParkingGarageException, java.rmi.RemoteException;
             
     void openGate(String gateId) throws ParkingGarageException, java.rmi.RemoteException;
     
@@ -39,6 +39,9 @@ public interface ParkingGarage extends java.rmi.Remote  {
     
     Rate[] getCurrentRates() throws ParkingGarageException, java.rmi.RemoteException;
     
+    boolean authenticateAdmin(String username, String password) throws ParkingGarageException, java.rmi.RemoteException;
+        
+    UsageReportViewModel getUsageReport(Date startDate, Date endDate, int delimeter) throws ParkingGarageException, java.rmi.RemoteException;
     
-    
+    void cancelEntry(String ticketId) throws ParkingGarageException, java.rmi.RemoteException;
 }

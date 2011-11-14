@@ -4,12 +4,12 @@
  */
 package cs414.a5.client;
 
+import javax.swing.JPanel;
+
 /**
  *
  * @author jeckstein
  */
-public enum PaymentMethods {
-    CASH1, //Netbeans is giving me problems with duplicate class error, so this was the easiest fix.
-    CARD,
-    IOU        
+public interface ViewLocationStrategy {
+    JPanel findView(String key); 
 }

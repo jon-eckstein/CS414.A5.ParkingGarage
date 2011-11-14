@@ -27,6 +27,10 @@ public class RateImpl implements Serializable, Rate {
         this.isFlatRate = isFlatRate;        
     }
 
+    RateImpl(BigDecimal rate, boolean isFlatRate){
+        this(null,null,rate,isFlatRate);
+    }
+    
     /**
      * @return the startDateTime
      */

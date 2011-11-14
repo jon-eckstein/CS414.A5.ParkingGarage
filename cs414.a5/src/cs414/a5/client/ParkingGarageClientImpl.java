@@ -9,11 +9,11 @@ import cs414.a5.common.ExitEvent;
 import cs414.a5.common.ParkingGarage;
 import cs414.a5.common.ParkingGarageException;
 import cs414.a5.common.Rate;
+import cs414.a5.common.UsageReportViewModel;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -157,17 +157,41 @@ public class ParkingGarageClientImpl {
         }
     }
     
+    public boolean  authenticateAdmin(String username, String password) throws ParkingGarageException, ServiceCommunicationException{
+        try {
+            return parkingGarageService.authenticateAdmin(username, password);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem authenticating: " + ex.getMessage());
+        }
+    }
     
+    public void setRate(BigDecimal rate, boolean isFlatRate) throws ParkingGarageException, ServiceCommunicationException{
+        try {
+            parkingGarageService.setRate(rate, isFlatRate);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem authenticating: " + ex.getMessage());
+        }
+    }
     
+    public UsageReportViewModel getUsageReport(Date startDate, Date endDate, int delimeter) throws ServiceCommunicationException, ParkingGarageException{
+        try {
+            return parkingGarageService.getUsageReport(startDate, endDate, delimeter);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem getting usage report: " + ex.getMessage());
+        }
+    } 
     
-    
-    
-    
-
-    
-    
-    
-    
+    public void cancelEntry(String ticketId) throws ServiceCommunicationException, ParkingGarageException{
+       try {
+            parkingGarageService.cancelEntry(ticketId);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new ServiceCommunicationException("Problem canceling entry: " + ex.getMessage());
+        } 
+    }
     
     
 }

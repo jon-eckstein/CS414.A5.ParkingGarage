@@ -12,8 +12,10 @@ package cs414.a5.client;
 
 import cs414.a5.common.Utilities;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.logging.Level;
@@ -33,6 +35,12 @@ public class ViewPaymentCARD extends AbstractPaymentView {
     /** Creates new form ViewPaymentCARD */
     public ViewPaymentCARD() {
         initComponents();
+        Date today = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(today);
+        
+        expireMonth = cal.get(Calendar.MONTH);
+        expireYear = cal.get(Calendar.YEAR);
     }
 
     public Object[] getExpireYearModel(){
@@ -147,18 +155,17 @@ public class ViewPaymentCARD extends AbstractPaymentView {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
-        
-        if(validateForm()){
-            try{                
-                getServiceClient().processCardPayment(getPayAmount(), getCardNumber(), getExpireDate(), getTicketId());
-                eventAggregator.publish(new PaymentCompleteEvent(getTicketId(), getPayAmount(), getBalanceAmount()));
-                
-            }catch(Exception ex){
+        try{
+            if(validateForm()){   
+                BigDecimal safePayAmount = new BigDecimal(getPayAmount());
+                getServiceClient().processCardPayment(safePayAmount, getCardNumber(), getExpireDate(), getTicketId());
+                eventAggregator.publish(new PaymentCompleteEvent(getTicketId(), safePayAmount, getBalanceAmount()));                                             
+            }else{
                 eventAggregator.publish(new StatusEvent("There was an error on the form. The card number must be valid and the expire date must not be earlier then today."));
             }
-                    
-        }else{
-            
+        }
+        catch(Exception ex){
+            handleException(ex);
         }
         
     }//GEN-LAST:event_btnSubmitActionPerformed
@@ -215,7 +222,7 @@ public class ViewPaymentCARD extends AbstractPaymentView {
     public Date getExpireDate(){
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         try {
-            return sdf.parse(String.valueOf(getExpireMonth()) + "/1/" + String.valueOf(getExpireYear()));            
+            return sdf.parse(String.valueOf(getExpireMonth()) + "/31/" + String.valueOf(getExpireYear()));            
         } catch (ParseException ex) {
             Logger.getLogger(ViewPaymentCARD.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -229,16 +236,26 @@ public class ViewPaymentCARD extends AbstractPaymentView {
     }
 
     private boolean validateForm() {
-                       
-        if(Utilities.isNullOrEmpty(getCardNumber()))
-            return false;
         
-        if(getExpireDate() == null)
+        try{
+            BigDecimal decimalPay = new BigDecimal(getPayAmount());
+            
+            if(decimalPay.compareTo(BigDecimal.ZERO) <= 0)
+                return false;
+            
+            if(Utilities.isNullOrEmpty(getCardNumber()))
+                return false;
+
+            if(getExpireDate() == null)
+                return false;
+
+            
+            if(getExpireDate().compareTo(new Date()) < 0)
+                return false;
+
+            return true;
+        }catch(Exception ex){
             return false;
-        
-        if(getExpireDate().compareTo(new Date()) < 0)
-            return false;
-                
-        return true;
+        }
     }
 }

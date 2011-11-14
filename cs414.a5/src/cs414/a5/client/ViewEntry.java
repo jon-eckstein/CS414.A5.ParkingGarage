@@ -12,14 +12,17 @@ package cs414.a5.client;
 
 import cs414.a5.common.EntryEvent;
 import java.util.Date;
+import javax.swing.SwingWorker;
 
 /**
  *
  * @author jeckstein
  */
-public class ViewEntry extends AbstractView {
+public class ViewEntry extends AbstractEntryExitView {
 
     private Printer printer = new PrinterFakeImpl();
+    private EntryEvent currentEntry;
+    
     
     /** Creates new form ViewEntry */
     public ViewEntry() {
@@ -39,8 +42,9 @@ public class ViewEntry extends AbstractView {
 
         btnGetTicket = new javax.swing.JButton();
         btnOpenGate = new javax.swing.JButton();
-        btnCloseGate = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
         pnlRates = new javax.swing.JPanel();
+        btnEnterGarage = new javax.swing.JButton();
 
         btnGetTicket.setText("Get Entry Ticket");
         btnGetTicket.addActionListener(new java.awt.event.ActionListener() {
@@ -50,42 +54,59 @@ public class ViewEntry extends AbstractView {
         });
 
         btnOpenGate.setText("Open Gate");
+        btnOpenGate.setEnabled(false);
         btnOpenGate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnOpenGateActionPerformed(evt);
             }
         });
 
-        btnCloseGate.setText("Close Gate");
+        btnCancel.setText("Cancel");
+        btnCancel.setEnabled(false);
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
 
-        pnlRates.setLayout(new java.awt.GridLayout());
+        pnlRates.setLayout(new java.awt.GridLayout(1, 0));
+
+        btnEnterGarage.setText("Enter Garage");
+        btnEnterGarage.setEnabled(false);
+        btnEnterGarage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEnterGarageActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(43, 43, 43)
+                .addContainerGap(43, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnCloseGate, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnGetTicket, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnOpenGate, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnGetTicket, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnEnterGarage, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(38, 38, 38)
-                .addComponent(pnlRates, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addComponent(pnlRates, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlRates, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(pnlRates, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnGetTicket)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnOpenGate)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnCloseGate)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnEnterGarage)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnCancel)))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -93,15 +114,15 @@ public class ViewEntry extends AbstractView {
     private void btnGetTicketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGetTicketActionPerformed
         try {
             Date entryDate = new Date();
-            EntryEvent entry = getServiceClient().createEntryEvent(entryDate, getGateId());
-            printer.printEntryTicket(entry);
+            currentEntry = getServiceClient().createEntryEvent(entryDate, getGateId());
+            printer.printEntryTicket(currentEntry);
             btnOpenGate.setEnabled(true);
             btnGetTicket.setEnabled(false);            
-            String statusMessage = "<html>The ticket has been printed. <br/> Your ticket number is: " + entry.getTicketId() + ". <br/> Please get ticket from printer. <br/> Please press Open Gate.</html>"; 
+            String statusMessage = "The ticket has been printed. Your ticket number is: " + currentEntry.getTicketId() + ". Please press Open Gate."; 
             eventAggregator.publish(new StatusEvent(statusMessage));
             //setEnterStatus("<html>The ticket has been printed. <br/> Your ticket number is: " + entry.getTicketId() + ". <br/> Please get ticket from printer. <br/> Please press Open Gate.</html>");      
         } catch (Exception ex) {
-            HandleException(ex);
+            handleException(ex);
         } 
     }//GEN-LAST:event_btnGetTicketActionPerformed
 
@@ -110,14 +131,42 @@ public class ViewEntry extends AbstractView {
         eventAggregator.publish(new StatusEvent("Gate opening..."));
         try {
             getServiceClient().openGate(getGateId());
-            eventAggregator.publish(new StatusEvent("Gate opened, please select close gate after you have entered. Park safely."));                        
+            eventAggregator.publish(new StatusEvent("Gate opened, please select 'Enter Garage' to enter or 'Cancel' to leave."));                        
+            btnOpenGate.setEnabled(false);
+            btnEnterGarage.setEnabled(true);
+            btnCancel.setEnabled(true);
         } catch (Exception ex) {
-            HandleException(ex);
+            handleException(ex);
         } 
     }//GEN-LAST:event_btnOpenGateActionPerformed
 
+    
+    
+    private void btnEnterGarageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnterGarageActionPerformed
+        
+        eventAggregator.publish(new StatusEvent("Thank you.  Gate will close shortly. Park safely."));
+        doCloseGate();
+    }//GEN-LAST:event_btnEnterGarageActionPerformed
+
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        try {
+            getServiceClient().cancelEntry(currentEntry.getTicketId());
+            eventAggregator.publish(new StatusEvent("Ticket cancelled.  Gate will close shortly. Goodbye."));                                               
+            doCloseGate();
+        } catch (Exception ex) {
+            handleException(ex);
+        } 
+    }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void doCloseGate(){        
+       btnCancel.setEnabled(false);
+       btnEnterGarage.setEnabled(false);
+       closeGate();
+    }            
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnCloseGate;
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnEnterGarage;
     private javax.swing.JButton btnGetTicket;
     private javax.swing.JButton btnOpenGate;
     private javax.swing.JPanel pnlRates;

@@ -19,8 +19,7 @@ public class ParkingGarageService {
     
     public ParkingGarageService(String url) {
         this.url = url;
-          try {
-             
+          try {             
                 ParkingGarage c = new ParkingGarageImpl();
                 Naming.rebind(url, c);
            } catch (Exception e) {
@@ -29,8 +28,11 @@ public class ParkingGarageService {
     }
     
     
-    public static void main(String args[])  {     
-        String url = new String("rmi://" + args[0] + ":" + args[1] + "/ParkingGarageService");
+    public static void main(String args[])  { 
+        String server = "localhost";
+        String port = "1099";
+        //String url = new String("rmi://" + args[0] + ":" + args[1] + "/ParkingGarageService");
+        String url = new String("rmi://" + server + ":" + port + "/ParkingGarageService");
         new ParkingGarageService(url);
     }
     

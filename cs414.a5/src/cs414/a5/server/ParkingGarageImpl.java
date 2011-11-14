@@ -9,7 +9,9 @@ import cs414.a5.common.ExitEvent;
 import cs414.a5.common.ParkingGarage;
 import cs414.a5.common.ParkingGarageException;
 import cs414.a5.common.Rate;
+import cs414.a5.common.UsageReportViewModel;
 import java.math.BigDecimal;
+import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
    private RateManager rateManager;
    private PaymentManager paymentManager;
    private ReportManager reportManager;
+   private CredentialManager credentialManager;
    private int totalSpots; 
    private int totalGates;
    private ArrayList<Gate> gates = new ArrayList<Gate>();
@@ -38,7 +41,8 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
        paymentManager = pm;
        totalSpots = numSpots;
        totalGates = numGates;
-       reportManager = new ReportManager(entryExitManager, totalSpots);       
+       reportManager = new ReportManager(entryExitManager, totalSpots);  
+       credentialManager = new CredentialManagerImpl();
        initGates();
    }
    
@@ -47,16 +51,13 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
        setDefaultRates();       
    }
    
-   private void setDefaultRates() throws ParseException, Exception{
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yy h:mm a"); 
-        Date startDate = dateFormatter.parse("01/01/2011 12:00 AM");
-        Date endDate = dateFormatter.parse("12/31/2011 11:59 PM");
+   private void setDefaultRates() throws ParseException, Exception{       
         BigDecimal hourlyRate = new BigDecimal("10.00");
         BigDecimal flatRate = new BigDecimal("40.00");
         //set the regular rate for the year...
-        rateManager.setRate(startDate, endDate, hourlyRate, false);
+        rateManager.setRate(hourlyRate, false);
         //set the flat rate for the year...
-        rateManager.setRate(startDate, endDate, flatRate, true);
+        rateManager.setRate(flatRate, true);
               
    }
    
@@ -110,8 +111,8 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
    }
    
     @Override
-   public void setRate(Date startDate, Date endDate, BigDecimal rate, boolean isFlatRate) throws ParkingGarageException, java.rmi.RemoteException{       
-        rateManager.setRate(startDate, endDate, rate, isFlatRate);       
+   public void setRate(BigDecimal rate, boolean isFlatRate) throws ParkingGarageException, java.rmi.RemoteException{       
+        rateManager.setRate(rate, isFlatRate);       
    }
    
     @Override
@@ -119,7 +120,8 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
        return getTotalSpots() - entryExitManager.getFilledSpots();
    }
    
-   public UsageReportViewModel getUsageReport(Date startDate, Date endDate, int delimeter){
+    @Override
+   public UsageReportViewModel getUsageReport(Date startDate, Date endDate, int delimeter) throws ParkingGarageException, java.rmi.RemoteException{
        return reportManager.getUsageReport(startDate, endDate, delimeter);
    }
    
@@ -149,8 +151,8 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
     @Override
     public Rate[] getCurrentRates() throws ParkingGarageException{
         Rate[] rates = new Rate[2];
-        rates[0] = rateManager.getRegularRate(new Date(), new Date());
-        rates[1] = rateManager.getFlatRate(new Date());
+        rates[0] = rateManager.getRegularRate();
+        rates[1] = rateManager.getFlatRate();
         return rates;
     }
     
@@ -167,5 +169,15 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
                return g;
         }        
         return null;        
+    }
+
+    @Override
+    public boolean authenticateAdmin(String username, String password) throws ParkingGarageException, RemoteException {
+        return credentialManager.authenticateUser(username, password);
+    }
+
+    @Override
+    public void cancelEntry(String ticketId) throws ParkingGarageException, RemoteException {
+        entryExitManager.cancelEntry(ticketId);
     }
 }

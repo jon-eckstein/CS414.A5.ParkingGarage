@@ -87,7 +87,7 @@ public class ViewRateSchedule extends AbstractView {
             this.tblRates.setModel(tableModel);
             validate();
         }catch(Exception ex)    {
-            HandleException(ex);
+            handleException(ex);
         }
     }
 

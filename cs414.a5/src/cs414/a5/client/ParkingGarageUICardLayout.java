@@ -16,21 +16,25 @@ import javax.swing.SwingWorker;
  *
  * @author jeckstein
  */
-public class ParkingGarageUICardLayout extends javax.swing.JFrame {
+public class ParkingGarageUICardLayout extends javax.swing.JFrame implements EventObserver {
 
     private String gateId = "1";
     private EventAggregator eventAggregator;    
-    ViewLocator viewLocator = new ViewLocator();
-    private ParkingGarageClientImpl parkingGarageService;
-    private int currentOpenSpots;
+    ViewLocator viewLocator = new ViewLocator();       
+    private String currentView;
+    private boolean isAdminLoggedIn=false;
+    private final String CUSTOMER_VIEW = "Customer";
+    private final String ADMIN_LOGIN_VIEW = "AdminLogin";
+    private final String ADMIN_VIEW = "Admin";
+    private String buttonText;
     
     /** Creates new form ParkingGarageUICardLayout */
     public ParkingGarageUICardLayout() {
-        initComponents();
-        initServiceClient();
-        initBackgroundJob();
+        initComponents();        
         initFooter();  
         eventAggregator = EventAggreagtorImpl.getInstance();
+        eventAggregator.subscribe(AdminLoggedInEvent.class, this);
+        switchView(CUSTOMER_VIEW);
     }
 
     /** This method is called from within the constructor to
@@ -41,19 +45,13 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         jPnlHeader = new javax.swing.JPanel();
         jLblGateId = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jPanelMain = new javax.swing.JPanel();
-        jPanelUserView = new javax.swing.JPanel();
-        btnEnter = new javax.swing.JButton();
-        btnExit = new javax.swing.JButton();
-        pnlEnterExit = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        lblOpenSpots = new javax.swing.JLabel();
+        pnlMain = new javax.swing.JPanel();
         pnlFooter = new javax.swing.JPanel();
+        btnSwitchView = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -79,67 +77,17 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
                 .addComponent(jLblGateId, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        jPanelMain.setLayout(new java.awt.CardLayout());
-
-        btnEnter.setText("Enter");
-        btnEnter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEnterActionPerformed(evt);
-            }
-        });
-
-        btnExit.setText("Exit");
-        btnExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExitActionPerformed(evt);
-            }
-        });
-
-        pnlEnterExit.setLayout(new java.awt.CardLayout());
-
-        jLabel1.setText("Open Spots:");
-
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, this, org.jdesktop.beansbinding.ELProperty.create("${currentOpenSpots}"), lblOpenSpots, org.jdesktop.beansbinding.BeanProperty.create("text"));
-        bindingGroup.addBinding(binding);
-
-        javax.swing.GroupLayout jPanelUserViewLayout = new javax.swing.GroupLayout(jPanelUserView);
-        jPanelUserView.setLayout(jPanelUserViewLayout);
-        jPanelUserViewLayout.setHorizontalGroup(
-            jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                        .addComponent(btnEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblOpenSpots))
-                    .addComponent(pnlEnterExit, javax.swing.GroupLayout.PREFERRED_SIZE, 708, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(198, Short.MAX_VALUE))
-        );
-        jPanelUserViewLayout.setVerticalGroup(
-            jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelUserViewLayout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(lblOpenSpots))
-                .addGap(38, 38, 38)
-                .addGroup(jPanelUserViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnEnter)
-                    .addComponent(btnExit))
-                .addGap(18, 18, 18)
-                .addComponent(pnlEnterExit, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40))
-        );
-
-        jPanelMain.add(jPanelUserView, "card2");
+        pnlMain.setLayout(new java.awt.CardLayout());
 
         pnlFooter.setName("pnlFooter"); // NOI18N
-        pnlFooter.setLayout(new java.awt.GridLayout());
+        pnlFooter.setLayout(new java.awt.GridLayout(1, 0));
+
+        btnSwitchView.setText(getButtonText());
+        btnSwitchView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSwitchViewActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -148,8 +96,11 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanelMain, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
-                    .addComponent(jPnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pnlMain, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 363, Short.MAX_VALUE)
+                        .addComponent(btnSwitchView, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(pnlFooter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -157,28 +108,45 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(2, 2, 2)
-                .addComponent(jPnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSwitchView))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanelMain, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pnlMain, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pnlFooter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(62, Short.MAX_VALUE))
         );
 
-        bindingGroup.bind();
-
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-        viewLocator.showView(this.pnlEnterExit, "Exit");
-    }//GEN-LAST:event_btnExitActionPerformed
-
-    private void btnEnterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnterActionPerformed
+    private void btnSwitchViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSwitchViewActionPerformed
         
-        viewLocator.showView(this.pnlEnterExit, "Entry");        
-    }//GEN-LAST:event_btnEnterActionPerformed
+        if(currentView.equals(CUSTOMER_VIEW)){
+            if(!isAdminLoggedIn){
+                switchView(ADMIN_LOGIN_VIEW);
+            }else{
+                switchView(ADMIN_VIEW);
+            }
+        }else{
+            switchView(CUSTOMER_VIEW);
+        }
+        
+    }//GEN-LAST:event_btnSwitchViewActionPerformed
 
+    
+    private void switchView(String viewName){
+        viewLocator.showView(pnlMain, viewName);
+        currentView = viewName;
+        if(viewName.equals(CUSTOMER_VIEW)){
+            btnSwitchView.setText("Switch to Admin View");            
+        }else{
+            btnSwitchView.setText("Switch to Customer View");            
+        }
+        validate();
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -208,7 +176,7 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
-
+                
             public void run() {
                 new ParkingGarageUICardLayout().setVisible(true);
             }
@@ -229,58 +197,46 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame {
         this.gateId = gateId;
     }
     
-     private void initServiceClient() {
-        parkingGarageService = ParkingGarageClientImpl.getInstance();
-        if(parkingGarageService == null){
-            eventAggregator.publish(new ExceptionOccuredEvent(new ServiceCommunicationException("Could not connect to parking garage service.")));            
-        }
-    }
-         
-
-     public void setCurrentOpenSpots(int currentOpenSpots) {
-        this.currentOpenSpots = currentOpenSpots;
-        firePropertyChange("currentOpenSpots", null, null);
-    }
-     
-     private void initBackgroundJob() {
-        SwingWorker sw = new SwingWorker() {
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                while (true) {
-                    setCurrentOpenSpots(parkingGarageService.getAvailableSpotCount());
-                    Thread.sleep(500);
-                }
-            }
-        };
-
-        sw.execute();
-    }
-     
+          
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnEnter;
-    private javax.swing.JButton btnExit;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton btnSwitchView;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLblGateId;
-    private javax.swing.JPanel jPanelMain;
-    private javax.swing.JPanel jPanelUserView;
     private javax.swing.JPanel jPnlHeader;
-    private javax.swing.JLabel lblOpenSpots;
-    private javax.swing.JPanel pnlEnterExit;
     private javax.swing.JPanel pnlFooter;
-    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
+    private javax.swing.JPanel pnlMain;
     // End of variables declaration//GEN-END:variables
 
-    /**
-     * @return the currentOpenSpots
-     */
-    public int getCurrentOpenSpots() {
-        return currentOpenSpots;
-    }
-
+    
     private void initFooter() {        
         this.pnlFooter.add("footer",new ViewStatusMessage());
         pnlFooter.validate();
+    }
+
+    @Override
+    public <T> void notifyOnEvent(T eventPayload) {
+        if(eventPayload.getClass() == AdminLoggedInEvent.class){
+            handleAdminLoggedIn();            
+        }
+    }
+    
+    private void handleAdminLoggedIn(){
+        isAdminLoggedIn = true;
+        switchView(ADMIN_VIEW);
+    }
+
+    /**
+     * @return the buttonText
+     */
+    public String getButtonText() {
+        return buttonText;
+    }
+
+    /**
+     * @param buttonText the buttonText to set
+     */
+    public void setButtonText(String buttonText) {
+        this.buttonText = buttonText;
+        firePropertyChange("buttonText", null, null);
     }
 }

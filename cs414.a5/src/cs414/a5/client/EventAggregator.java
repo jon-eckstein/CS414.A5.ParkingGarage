@@ -12,8 +12,8 @@ public interface EventAggregator {
 
     <T> void publish(T payload);
 
-    void subscribe(Class eventClass, AbstractView view);
+    void subscribe(Class eventClass, EventObserver observer);
 
-    void unsubscribe(Class eventClass, AbstractView view);
+    void unsubscribe(Class eventClass, EventObserver observer);
     
 }
