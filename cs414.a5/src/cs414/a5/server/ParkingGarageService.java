@@ -6,8 +6,6 @@ package cs414.a5.server;
 
 import cs414.a5.common.ParkingGarage;
 import java.rmi.Naming;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 
 /**
  *
@@ -19,7 +17,7 @@ public class ParkingGarageService {
     
     public ParkingGarageService(String url) {
         this.url = url;
-          try {             
+          try {                           
                 ParkingGarage c = new ParkingGarageImpl();
                 Naming.rebind(url, c);
            } catch (Exception e) {
@@ -29,10 +27,10 @@ public class ParkingGarageService {
     
     
     public static void main(String args[])  { 
-        String server = "localhost";
-        String port = "1099";
-        //String url = new String("rmi://" + args[0] + ":" + args[1] + "/ParkingGarageService");
-        String url = new String("rmi://" + server + ":" + port + "/ParkingGarageService");
+        //String server = "localhost";
+        //String port = "1099";        
+        //String url = new String("rmi://" + server + ":" + port + "/ParkingGarageService");
+        String url = new String("rmi://" + args[0] + ":" + args[1] + "/ParkingGarageService");
         new ParkingGarageService(url);
     }
     

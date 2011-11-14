@@ -19,7 +19,7 @@ public abstract class AbstractView extends JPanel implements EventObserver {
     protected EventAggregator eventAggregator;
     protected NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
     private ParkingGarageClientImpl parkingGarageService;
-    private String gateId="1";
+    
     
     public AbstractView(){
         eventAggregator = EventAggreagtorImpl.getInstance();
@@ -38,21 +38,14 @@ public abstract class AbstractView extends JPanel implements EventObserver {
     
     protected void handleException(Exception ex) {
         eventAggregator.publish(new ExceptionOccuredEvent(ex));               
-        Logger.getLogger(ParkingGarageUI.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(ParkingGarageSwingUI.class.getName()).log(Level.SEVERE, null, ex);
     }
 
     /**
      * @return the gateId
      */
     protected String getGateId() {
-        return gateId;
-    }
-
-    /**
-     * @param gateId the gateId to set
-     */
-    protected void setGateId(String gateId) {
-        this.gateId = gateId;
+        return parkingGarageService.getGateId();
     }
     
     @Override

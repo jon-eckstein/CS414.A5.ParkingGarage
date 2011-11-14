@@ -13,6 +13,7 @@ import cs414.a5.common.UsageReportViewModel;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -30,7 +31,7 @@ public class ParkingGarageClientImpl {
     
     private static ParkingGarageClientImpl instance;    
     private ParkingGarage parkingGarageService;
-    public String serverMessage;
+    private String gateId;
     
     private ParkingGarageClientImpl() throws FileNotFoundException, IOException, NotBoundException{
         //initialize the rmi service...
@@ -57,13 +58,14 @@ public class ParkingGarageClientImpl {
      }
 
     private void initParkingGarageClient() throws FileNotFoundException, IOException, NotBoundException {
-        //TODO: get properties working...            
-        //Properties props = new Properties();            
-        //props.load(new FileInputStream("app.properties"));            
-        String serviceHost = "localhost"; //props.getProperty("rmi_parking_garage_server");
-        String servicePort = "1099"; //props.getProperty("rmi_parking_garage_port");
-        parkingGarageService = (ParkingGarage) Naming.lookup("rmi://" + serviceHost + ":" + servicePort + "/ParkingGarageService");
         
+        Properties props = new Properties();                    
+        InputStream in = getClass().getResourceAsStream("client.properties");
+        props.load(in);            
+        String serviceHost = props.getProperty("rmi_parking_garage_server"); 
+        String servicePort = props.getProperty("rmi_parking_garage_port"); 
+        parkingGarageService = (ParkingGarage) Naming.lookup("rmi://" + serviceHost + ":" + servicePort + "/ParkingGarageService");
+        setGateId(props.getProperty("terminal_gate_id"));
     }
 
     public EntryEvent createEntryEvent(Date entryDate, String gateId) throws ParkingGarageException, ServiceCommunicationException {        
@@ -191,6 +193,20 @@ public class ParkingGarageClientImpl {
             Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
             throw new ServiceCommunicationException("Problem canceling entry: " + ex.getMessage());
         } 
+    }
+
+    /**
+     * @return the gateId
+     */
+    public String getGateId() {
+        return gateId;
+    }
+
+    /**
+     * @param gateId the gateId to set
+     */
+    public void setGateId(String gateId) {
+        this.gateId = gateId;
     }
     
     

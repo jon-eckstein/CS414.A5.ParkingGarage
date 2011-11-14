@@ -10,12 +10,15 @@ import cs414.a5.common.ParkingGarage;
 import cs414.a5.common.ParkingGarageException;
 import cs414.a5.common.Rate;
 import cs414.a5.common.UsageReportViewModel;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Properties;
 
 /**
  *
@@ -31,34 +34,34 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
    private int totalSpots; 
    private int totalGates;
    private ArrayList<Gate> gates = new ArrayList<Gate>();
-   public static final int DEFAULT_TOTAL_SPOTS = 100;
-   public static final int DEFAULT_GATE_COUNT = 2;
+   private Properties props;
    
    
-   public ParkingGarageImpl(EntryExitManager eem, PaymentManager pm, int numSpots, int numGates) throws java.rmi.RemoteException{       
+   
+   public ParkingGarageImpl(EntryExitManager eem, PaymentManager pm) throws java.rmi.RemoteException, IOException, ParseException, ParkingGarageException{       
        entryExitManager = eem;
-       rateManager = eem.rateManager;       
-       paymentManager = pm;
-       totalSpots = numSpots;
-       totalGates = numGates;
+       rateManager = entryExitManager.rateManager;       
+       paymentManager = pm;       
        reportManager = new ReportManager(entryExitManager, totalSpots);  
        credentialManager = new CredentialManagerImpl();
+       getProperties();
+       this.totalSpots = Integer.getInteger(props.getProperty("num_total_spots"));
+       this.totalGates = Integer.getInteger(props.getProperty("num_total_gates"));
        initGates();
+       setDefaultRates();
    }
    
-   public ParkingGarageImpl() throws java.rmi.RemoteException, ParseException, Exception{
-       this(new EntryExitManager(new RateManager()), new PaymentManager(new PaymentGateway()), DEFAULT_TOTAL_SPOTS, DEFAULT_GATE_COUNT);
-       setDefaultRates();       
+   public ParkingGarageImpl() throws java.rmi.RemoteException, ParseException, ParkingGarageException, IOException{       
+        this(new EntryExitManager(new RateManager()), new PaymentManager(new PaymentGateway()));              
    }
    
-   private void setDefaultRates() throws ParseException, Exception{       
-        BigDecimal hourlyRate = new BigDecimal("10.00");
-        BigDecimal flatRate = new BigDecimal("40.00");
+   private void setDefaultRates() throws ParseException, ParkingGarageException{       
+        BigDecimal hourlyRate = new BigDecimal(props.getProperty("default_regular_rate_amt"));
+        BigDecimal flatRate = new BigDecimal(props.getProperty("default_flat_rate_amt"));
         //set the regular rate for the year...
         rateManager.setRate(hourlyRate, false);
         //set the flat rate for the year...
-        rateManager.setRate(flatRate, true);
-              
+        rateManager.setRate(flatRate, true);              
    }
    
    
@@ -179,5 +182,13 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
     @Override
     public void cancelEntry(String ticketId) throws ParkingGarageException, RemoteException {
         entryExitManager.cancelEntry(ticketId);
+    }
+
+    private void getProperties() throws IOException {
+        //get defaults from properties file..
+        props = new Properties();                    
+        InputStream in = getClass().getResourceAsStream("server.properties");
+        props.load(in);        
+        
     }
 }

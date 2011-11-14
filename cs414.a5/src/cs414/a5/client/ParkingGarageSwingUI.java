@@ -16,7 +16,7 @@ import javax.swing.SwingWorker;
  *
  * @author jeckstein
  */
-public class ParkingGarageUICardLayout extends javax.swing.JFrame implements EventObserver {
+public class ParkingGarageSwingUI extends javax.swing.JFrame implements EventObserver {
 
     private String gateId = "1";
     private EventAggregator eventAggregator;    
@@ -29,7 +29,7 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame implements Eve
     private String buttonText;
     
     /** Creates new form ParkingGarageUICardLayout */
-    public ParkingGarageUICardLayout() {
+    public ParkingGarageSwingUI() {
         initComponents();        
         initFooter();  
         eventAggregator = EventAggreagtorImpl.getInstance();
@@ -164,13 +164,13 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame implements Eve
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ParkingGarageUICardLayout.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ParkingGarageSwingUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ParkingGarageUICardLayout.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ParkingGarageSwingUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ParkingGarageUICardLayout.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ParkingGarageSwingUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ParkingGarageUICardLayout.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ParkingGarageSwingUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -178,7 +178,7 @@ public class ParkingGarageUICardLayout extends javax.swing.JFrame implements Eve
         java.awt.EventQueue.invokeLater(new Runnable() {
                 
             public void run() {
-                new ParkingGarageUICardLayout().setVisible(true);
+                new ParkingGarageSwingUI().setVisible(true);
             }
         });
     }
