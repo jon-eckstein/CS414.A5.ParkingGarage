@@ -13,6 +13,7 @@ import cs414.a5.common.UsageReportViewModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,14 +40,14 @@ public class ParkingGarageImpl extends java.rmi.server.UnicastRemoteObject
    
    
    public ParkingGarageImpl(EntryExitManager eem, PaymentManager pm) throws java.rmi.RemoteException, IOException, ParseException, ParkingGarageException{       
+       getProperties();       
+       this.totalSpots = Integer.parseInt(props.getProperty("num_total_spots"));
+       this.totalGates = Integer.parseInt(props.getProperty("num_total_gates"));
        entryExitManager = eem;
        rateManager = entryExitManager.rateManager;       
        paymentManager = pm;       
        reportManager = new ReportManager(entryExitManager, totalSpots);  
-       credentialManager = new CredentialManagerImpl();
-       getProperties();
-       this.totalSpots = Integer.getInteger(props.getProperty("num_total_spots"));
-       this.totalGates = Integer.getInteger(props.getProperty("num_total_gates"));
+       credentialManager = new CredentialManagerImpl();       
        initGates();
        setDefaultRates();
    }

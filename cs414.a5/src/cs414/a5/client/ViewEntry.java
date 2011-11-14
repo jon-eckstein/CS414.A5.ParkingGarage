@@ -20,7 +20,7 @@ import javax.swing.SwingWorker;
  */
 public class ViewEntry extends AbstractEntryExitView {
 
-    private Printer printer = new PrinterFakeImpl();
+    private Printer printer = new FakePrinterAdapter();
     private EntryEvent currentEntry;
     
     

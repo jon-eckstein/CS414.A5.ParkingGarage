@@ -103,6 +103,7 @@ public class ViewStatusMessage extends AbstractView {
         this.message = message;
         messageLastSet = new Date();
         firePropertyChange("message", null, null);
+        
                 
     }
 
@@ -118,10 +119,9 @@ public class ViewStatusMessage extends AbstractView {
                         if(seconds > MESSAGE_KEEP_DURATION_SECS && !message.equals(""))
                             setMessage("");                                        
                     }
-                }
-
-                
+                }                
             };
+        
             sw.execute();
     }
 

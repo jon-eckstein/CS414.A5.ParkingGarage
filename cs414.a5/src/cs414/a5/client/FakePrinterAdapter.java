@@ -14,9 +14,9 @@ import java.util.logging.Logger;
  *
  * @author jeckstein
  */
-public class PrinterFakeImpl implements Printer {
+public class FakePrinterAdapter implements Printer {
     
-    public PrinterFakeImpl(){}
+    public FakePrinterAdapter(){}
     
     @Override
     public void printEntryTicket(EntryEvent entry){
@@ -32,7 +32,7 @@ public class PrinterFakeImpl implements Printer {
         try {      
             Thread.sleep(1000);            
         } catch (InterruptedException ex) {
-            Logger.getLogger(PrinterFakeImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FakePrinterAdapter.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

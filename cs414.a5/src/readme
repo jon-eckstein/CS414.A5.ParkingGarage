@@ -1,0 +1,85 @@
+Jon Eckstein
+A5 Write Up
+
+notes:
+    This application was built using Netbeans 7.0.1 on Windows 7 (64bit)
+    Both the client and server obtain default properties via a property file.
+    the server.properties file contains the following values:
+        number of spots
+        number of gates
+        default hourly rate
+        default flat rate
+
+    the client.properties file contains:
+        rmi server
+        rmi port
+        the assigned gate number
+    Please edit these files to change any of the above params.
+
+
+1) external dependencies:
+    -beansbinding-1.2.1.jar
+    -AbsoluteLayout.jar
+    
+
+2) Running from the command line:
+    I don't know, I couldn't get it to run on the command line...here are the main classes for client and server.  The server takes 2 arguments which define the RMI server/port params.
+    -server: cs414.a5.server.ParkingGarageService <server>,<port>
+    -client: cs414.a5.client.ParkingGarageSwingUI
+
+3) admin credentials:
+    -username: admin
+    -password: password
+
+4) Strong/weak
+   -strong:
+        -system does everything that it's suppose to.
+        -use of patterns            
+        -easy to follow user interface flow
+        
+    -weak:
+        -I could not get the source to run after I moved it from it's original file structure to the cs414\a5\eid\ structure.
+            I was forced to leave it in the original structure.
+        -Had trouble with UI design particularly with controls which would not behave in the layout manager.
+        -Lack of UI tests
+        -Could not get the system status message to clear properly.
+        -Not including currently parked cars in usage report.
+        
+
+5) Patterns
+   -client:
+    1) Observer with EventAggregator
+        -The EventAggregator class serves as central point for publishing messages to interested subscribers.  
+        This allows for disconnected parts of the application to be able to talk to each other in a very low coupled way. 
+        Interested classes subscribe to events via event classes. This lets observers subscribe to very specific events however it comes at the cost of having 
+        "empty" classes with no real purpose but to represent the signaled event (see AdminLoggedInEvent).  
+     
+    2) Strategy
+        -The ViewLocator class, which is responsible for loading the JPanels into any given CardLayout, utilizes a ViewLocationStrategy. The
+        default PrefixLocationStrategy finds the views given the "View" prefix on the class name along with a unique key. 
+        The strategy pattern in this instance would let another developer quickly replace the default view location method with another method if the need arises.
+    
+    3) Facade
+        -The ParkingGarageClientImpl class hides the RMI details of implementation from the rest of the application. For example, RemoteException is never thrown past
+        ParkingGarageClientImpl.  This allows for a decoupling with RMI and if the connection methodology needs to change to another implementation such as SOAP over HTTP, 
+        then it can be done without effecting the rest of the application.   
+
+    3) Adapter
+        -The FakePrinterAdapter is representative of the adapter patter.  The "fake" implementation does not utilize any printer but one could imagine another 
+        adapter being written for a real printer which has it's own unique set of commands.  
+
+    4) Singleton
+        -The EventAggregator and the ParkingGarageClient are both examples of singeltons.  This pattern allows for any component in the UI to access the single instance.
+    
+    
+
+    -server:
+    1) Strategy:
+        The ReportManager utilizes different aggregation strategies based on the user-given report breakdown.  For instance, if the user selects a report broken down by day, 
+        the correct strategy will be used to aggregate the numbers.  This allows for different strategies to be used if the users need a different kind of breakdown.  
+        The core report creation functionality will stay the same.
+    
+     2) Abstract Factory
+        The ReportAggregationStrategyFactory is used to provide the ReportManager with the correct aggregation strategy.  
+        This is useful in containing the logic associated with selecting a given aggregation strategy.
+
