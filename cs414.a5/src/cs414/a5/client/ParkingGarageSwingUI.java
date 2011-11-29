@@ -26,15 +26,21 @@ public class ParkingGarageSwingUI extends javax.swing.JFrame implements EventObs
     private final String CUSTOMER_VIEW = "Customer";
     private final String ADMIN_LOGIN_VIEW = "AdminLogin";
     private final String ADMIN_VIEW = "Admin";
+    private final String BLANK="Blank";
     private String buttonText;
     
     /** Creates new form ParkingGarageUICardLayout */
     public ParkingGarageSwingUI() {
         initComponents();        
-        initFooter();  
+        initFooter();          
         eventAggregator = EventAggreagtorImpl.getInstance();
         eventAggregator.subscribe(AdminLoggedInEvent.class, this);
-        switchView(CUSTOMER_VIEW);
+        if(isServiceConnectionAlive()){        
+            switchView(CUSTOMER_VIEW);
+        }else{
+            switchView(BLANK);
+            btnSwitchView.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -238,5 +244,17 @@ public class ParkingGarageSwingUI extends javax.swing.JFrame implements EventObs
     public void setButtonText(String buttonText) {
         this.buttonText = buttonText;
         firePropertyChange("buttonText", null, null);
+    }
+
+    private boolean isServiceConnectionAlive() {
+        //do a trivial call to server to make sure it's alive...
+        try{            
+            ParkingGarageClientImpl.getInstance().getAvailableSpotCount();
+            return true;
+        }
+        catch(Exception ex){
+            eventAggregator.publish(new StatusEvent("Cannot establish service connection.  Please come back later."));
+            return false;
+        }
     }
 }

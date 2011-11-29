@@ -15,7 +15,9 @@ notes:
         rmi port
         the assigned gate number
     Please edit these files to change any of the above params.
-
+    
+    I was a having a lot of problems with Netbeans when I tried to move my solution folders to match the required structure.  
+    My source is all in place except it's not under my eid.
 
 1) external dependencies:
     -beansbinding-1.2.1.jar
@@ -23,7 +25,7 @@ notes:
     
 
 2) Running from the command line:
-    I don't know, I couldn't get it to run on the command line...here are the main classes for client and server.  The server takes 2 arguments which define the RMI server/port params.
+    I don't know, sorry, I couldn't get it to run on the command line...here are the main classes for client and server.  The server takes 2 arguments which define the RMI server/port params.
     -server: cs414.a5.server.ParkingGarageService <server>,<port>
     -client: cs414.a5.client.ParkingGarageSwingUI
 

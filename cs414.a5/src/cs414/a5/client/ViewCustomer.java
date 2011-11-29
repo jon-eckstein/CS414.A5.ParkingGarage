@@ -108,10 +108,12 @@ public class ViewCustomer extends AbstractView {
     private void btnEnterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnterActionPerformed
         // TODO add your handling code here:
         viewLocator.showView(pnlEnterExit, "Entry");
+        btnExit.setEnabled(false);
     }//GEN-LAST:event_btnEnterActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
         viewLocator.showView(pnlEnterExit, "Exit");
+        btnEnter.setEnabled(false);
     }//GEN-LAST:event_btnExitActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -129,7 +131,12 @@ public class ViewCustomer extends AbstractView {
             @Override
             protected Object doInBackground() throws Exception {
                 while (true) {
-                    setCurrentOpenSpots(getServiceClient().getAvailableSpotCount());
+                    try{
+                        int openSpots = getServiceClient().getAvailableSpotCount();
+                        setCurrentOpenSpots(openSpots);
+                    }catch(Exception ex){
+                        handleException(ex);
+                    }
                     Thread.sleep(500);  
                 }
             }
@@ -162,5 +169,7 @@ public class ViewCustomer extends AbstractView {
 
     private void handleGateClosed() {
         viewLocator.showView(pnlEnterExit, "Blank");
+        btnEnter.setEnabled(true);
+        btnExit.setEnabled(true);
     }
 }

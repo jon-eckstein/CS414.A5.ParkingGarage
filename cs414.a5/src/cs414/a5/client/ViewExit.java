@@ -139,16 +139,19 @@ public class ViewExit extends AbstractEntryExitView {
 
     private void btnInvoiceAmountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoiceAmountActionPerformed
         String ticketNum = txtTicketNumber.getText();
+        
         if (!Utilities.isNullOrEmpty(ticketNum)) {
             try {
-                if(ticketNum.toUpperCase().equals(LOST_TICKET))
+                if(ticketNum.toUpperCase().equals(LOST_TICKET)){
                     currentExit = getServiceClient().createFlatRateExitEvent(new Date());
-                else    
+                    eventAggregator.publish(new StatusEvent("Your total is " + currencyFormatter.format(currentExit.getTotalInvoiceAmount().doubleValue())  + ". Please select payment method."));                
+                }
+                else{    
                     currentExit = getServiceClient().createExitEvent(ticketNum, new Date());
-                
-                currentAmountDue = currentExit.getTotalInvoiceAmount();
-                setIsTicketRetrieved(true); 
-                eventAggregator.publish(new StatusEvent("The total is " + currencyFormatter.format(currentAmountDue.doubleValue())  + ". Please select payment method."));                
+                    eventAggregator.publish(new StatusEvent("Your total for " + currentExit.getTotalHours() + " hours is " + currencyFormatter.format(currentExit.getTotalInvoiceAmount().doubleValue())  + ". Please select payment method."));                
+                }
+                              
+                setIsTicketRetrieved(true);                 
                 
             } catch (Exception ex) {
                 handleException(ex);
@@ -162,7 +165,7 @@ public class ViewExit extends AbstractEntryExitView {
         if (selectedItem instanceof PaymentMethods) {
             PaymentMethods payMethod = (PaymentMethods)selectedItem;
             viewLocator.showView(pnlPaymentMethod, "Payment" + payMethod);                        
-            eventAggregator.publish(new InvoiceEvent(currentAmountDue, currentExit.getTicketId()));
+            eventAggregator.publish(new InvoiceEvent(currentExit.getTotalInvoiceAmount(), currentExit.getTicketId()));
         }
     }//GEN-LAST:event_cmbPaymentMethodActionPerformed
 
@@ -175,6 +178,7 @@ public class ViewExit extends AbstractEntryExitView {
             btnOpenGate.setEnabled(false);
             btnInvoiceAmount.setEnabled(false);
             btnOpenGate.setEnabled(false);
+            cmbPaymentMethod.setEnabled(false);
             closeGate();
         } catch (Exception ex) {
             handleException(ex);
@@ -236,6 +240,7 @@ public class ViewExit extends AbstractEntryExitView {
     public void setIsTicketRetrieved(boolean isTicketRetrieved) {
         this.isTicketRetrieved = isTicketRetrieved;
         this.cmbPaymentMethod.setEnabled(isTicketRetrieved);
+        this.btnInvoiceAmount.setEnabled(false);
         //firePropertyChange("isTicketRetrieved", null, null);
     }
 

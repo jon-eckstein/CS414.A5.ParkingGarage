@@ -32,6 +32,7 @@ public class ParkingGarageClientImpl {
     private static ParkingGarageClientImpl instance;    
     private ParkingGarage parkingGarageService;
     private String gateId;
+    private static EventAggregator eventAggregator = EventAggreagtorImpl.getInstance();
     
     private ParkingGarageClientImpl() throws FileNotFoundException, IOException, NotBoundException{
         //initialize the rmi service...
@@ -43,15 +44,10 @@ public class ParkingGarageClientImpl {
         if (instance==null) {
             try {
                 instance = new ParkingGarageClientImpl();
-            } catch (FileNotFoundException ex) {
+            } catch (Exception ex) {
                 Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            } catch (IOException ex) {
-                Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            } catch (NotBoundException ex) {
-                Logger.getLogger(ParkingGarageClientImpl.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
+                eventAggregator.publish(new ExceptionOccuredEvent(ex));
+                return null;   
             }
         }
         return instance;

@@ -74,4 +74,7 @@
     <target name="startRMI" depends="init">
         <exec executable="rmiregistry" dir="${build.classes.dir}"></exec>
     </target> 
+    <target description="bundle sources in a jar" name="package-sources">
+        <jar basedir="src" destfile="dist/${ant.project.name}-sources.jar"/>
+    </target>    
 </project>
